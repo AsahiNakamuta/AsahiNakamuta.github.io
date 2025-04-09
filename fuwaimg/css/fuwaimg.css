@@ -1,0 +1,344 @@
+@charset "UTF-8";
+
+/* -----------------------------------------------------
+プログラム名：fuwaimg
+バージョン：1.4.2
+製作者：ガタガタ（https://do.gt-gt.org/）
+公開日：2020.11.20
+修正日：2022.05.16
+
+このプログラムは使用・改変・再配布・販売すべて自由です。
+報告やリンクなども必要ありません。
+ただし、利用にあたりこの注意書きは削除しないでください。
+また、あたかもプログラムを自作したかのように誤解させる言動はお控えください。
+----------------------------------------------------- */
+
+#fuwaimg {
+  position: fixed;
+  width: 100vw;
+  min-height: 100vh; /* Fallback */
+  min-height: calc(var(--vh, 1vh) * 100);
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  z-index: 999999;
+  transition: .3s;
+}
+#fuwaimg.hidden {
+  visibility: hidden;
+  opacity: 0;
+  z-index: -1;
+}
+#fuwaimg_mask {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  z-index: -1;
+  background: rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+}
+#fuwaimg_inner {
+  position: absolute;
+  margin: auto;
+  opacity: 0;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+  width: fit-content;
+  height: fit-content;
+  max-height: 90%;
+  width: 90vw;
+  background: white;
+  box-shadow: 0 0 20px #00000054;
+}
+div#fuwaimg_img {
+    width: 90vw;
+    max-height: calc(80vh - 100px);
+    max-height: calc((var(--vh, 1vh) * 80) - 100px);
+    background: black;
+    overflow: visible;
+}
+#fuwaimg_img img {
+  display: block;
+  max-height: calc(80vh - 100px);
+  max-height: calc((var(--vh, 1vh) * 80) - 100px);
+  width: 100%;
+  object-fit: contain;
+  margin: 0;
+  padding: 0;
+}
+div#fuwaimg_img.zoom_in {
+  width: 90vw;
+  max-width: 100%;
+  overflow: scroll;
+  cursor: grab;
+}
+div#fuwaimg_img.zoom_in:active {
+  cursor: grabbing;
+}
+div#fuwaimg_img:not(.zoom_in) div#fuwaimg_imginner {
+  transform: none!important;
+}
+div#fuwaimg_img.zoom_in::-webkit-scrollbar{
+  display: none;
+}
+div#fuwaimg_img.zoom_in img {
+  max-width: none;
+  width: auto;
+  max-height: none;
+}
+div#fuwaimg_caption {
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+}
+p#fuwaimg_caption_text {
+    flex: 1;
+    margin: 10px;
+    font-size: 12px;
+    line-height: 1.6em;
+    width: calc(100% - 50px);
+    overflow-x: auto;
+    overflow-wrap: normal;
+}
+button#fuwaimg_close {
+    display: block;
+    width: 40px;
+    height: 50px;
+    line-height: 1;
+    margin: auto 5px 0 0;
+    padding: 0;
+    border: none;
+    background: none;
+    position: relative;
+    cursor: pointer;
+    transition: .3s;
+}
+button#fuwaimg_close:hover {
+  opacity: .4;
+}
+button#fuwaimg_close:before,
+button#fuwaimg_close:after {
+    content: "";
+    display: block;
+    width: 18px;
+    height: 2px;
+    background: #000;
+    transform: rotate(45deg);
+    transform-origin: 0% 50%;
+    position: absolute;
+    top: -15px;
+    right: -8px;
+    left: 0;
+    bottom: 0;
+    margin: auto;
+    transition: .3s;
+    opacity: 1;
+  }
+button#fuwaimg_close:after{
+    transform: rotate(-45deg);
+    transform-origin:100% 50%;
+    right: 3px;
+    pointer-events: ;
+}
+button#fuwaimg_zoom {
+  background: transparent;
+  border: none;
+  width: 40px;
+  height: 50px;
+  cursor: pointer;
+  transition: .3s;
+}
+button#fuwaimg_zoom:hover {
+  opacity: .4;
+}
+img#fuwaimg_zoomimg {
+  width: 30px;
+  height: 30px;
+}
+a#fuwaimg_prev {
+    visibility: hidden;
+    width: 55px;
+    height: 55px;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    margin: auto;
+    left: -10px;
+    right: auto;
+    filter: drop-shadow(0px 0px 6px #00000054);
+    cursor: pointer;
+}
+a#fuwaimg_prev:before {
+    content: '';
+    width: 10px;
+    height: 10px;
+    display: block;
+    border-left: 3px solid white;
+    border-bottom: 3px solid white;
+    transform: rotate(45deg);
+    position: absolute;
+    margin: auto;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    transition: .3s;
+}
+a#fuwaimg_prev:hover:before {
+    left: -7px;
+}
+a#fuwaimg_next {
+    visibility: hidden;
+    width: 55px;
+    height: 55px;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    margin: auto;
+    right: -10px;
+    left: auto;
+    filter: drop-shadow(0px 0px 6px #00000054);
+    cursor: pointer;
+}
+a#fuwaimg_next:before {
+    content: '';
+    width: 10px;
+    height: 10px;
+    display: block;
+    border-right: 3px solid white;
+    border-bottom: 3px solid white;
+    transform: rotate(-45deg);
+    position: absolute;
+    margin: auto;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    transition: .3s;
+}
+a#fuwaimg_next:hover:before {
+    right: -7px;
+}
+
+@media only screen and (min-width: 750px) {
+  a#fuwaimg_prev {
+    left: -55px;
+  }
+  a#fuwaimg_prev:before {
+    width: 15px;
+    height: 15px;
+  }
+  a#fuwaimg_next {
+    right: -55px;
+  }
+  a#fuwaimg_next:before {
+    width: 15px;
+    height: 15px;
+  }
+  
+p#fuwaimg_caption_text {
+  font-size: 14px;
+}
+
+  #fuwaimg_inner {
+    max-width: calc(90vw - 50px);
+  }
+  div#fuwaimg_img {
+    max-width: calc(90vw - 50px);
+    max-height: calc(95vh - 120px);
+    max-height: calc((var(--vh, 1vh) * 95) - 120px);
+  }
+  #fuwaimg_img img {
+    display: block;
+    max-height: calc(95vh - 120px);
+    max-height: calc((var(--vh, 1vh) * 95) - 120px);
+    max-width: calc(90vw - 50px);
+    width: auto;
+    object-fit: contain;
+    margin: 0;
+    padding: 0;
+  }
+}
+
+span#fuwaimg_loading {
+    z-index: -1;
+    color: white;
+    position: absolute;
+    margin: auto;
+    width: fit-content;
+    height: fit-content;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'メイリオ', Meiryo,'Hiragino Kaku Gothic ProN','ヒラギノ角ゴ ProN W3',sans-serif;
+}
+#fuwaimg_loadbar {
+  overflow: hidden;
+    position: absolute;
+    width: 100px;
+    height: 7px;
+    background: #ffffff52;
+    margin: auto;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    top: 40px;
+}
+#fuwaimg_loadbar:before {
+  content: '';
+  display: block;
+  position: absolute;
+  width: 20px;
+  height: 7px;
+  background: #ffffff;
+  margin: auto;
+  right: 100%;
+  left: -20%;
+  animation: fuwaimg_loading 1.3s;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
+}
+
+.fuwaimg_fadein {
+  animation : fuwaimg_fadein 0.3s;
+  animation-fill-mode: both;
+}
+
+.fuwaimg_fadeout {
+  animation : fuwaimg_fadeout 0.3s;
+  animation-fill-mode: both;
+}
+
+@keyframes fuwaimg_loading {
+  0% {
+    right: 100%;
+    left: -20%;
+  }
+  100% {
+    right: 0%;
+    left: 100%;
+  }
+}
+
+@keyframes fuwaimg_fadein {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes fuwaimg_fadeout {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}

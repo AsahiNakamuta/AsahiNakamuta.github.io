@@ -1,0 +1,54 @@
+﻿*----------------------------------------------------------*
+　はじめに
+*----------------------------------------------------------*
+
+ダウンロードいただきありがとうございます。
+このテンプレートは、無料でお使いいただけます。
+利用規約に同意の上でご利用ください。
+
+
+*----------------------------------------------------------*
+　利用規約
+*----------------------------------------------------------*
+
+×　ＮＧ　×
+・再配布
+・画像への直リンク
+・著作権表示の削除
+・違法サイト、アダルトサイト（同人系除く）、有料サイト、宗教関係のサイトでの使用
+
+〇　ＯＫ　〇
+・カスタマイズ（素材の入れ替え時には、著作権表示を修正下さい）
+
+
+素材、テンプレートの使用によって生じたいかなるトラブルも、当方では責任を負いかねますのでご了承ください。
+
+
+*----------------------------------------------------------*
+　クレジット
+*----------------------------------------------------------*
+
+テンプレートデザイン　：　空蝉(https://hiroec.utsusemi.com/)
+
+フォント　：　Google Fonts(https://fonts.google.com/)
+  Released under the SIL Open Font License
+
+
+A Modern CSS Reset　:  Copyright (c) 2019 Andy Bell and other contributors
+				(https://hankchizljaw.com/wrote/a-modern-css-reset/)
+  Released under the MIT license
+  (https://opensource.org/licenses/mit-license.php)
+
+アイコン　：　Line Awesome（https://icons8.com/line-awesome）
+　Released under the MIT license
+
+JavaScriptライブラリ　：　do [fuwaimg] (https://do.gt-gt.org/product/fuwaimg/）
+
+イラスト　：　
+実鈴さま（https://www.ac-illust.com/main/profile.php?id=TN2zzh3d&area=1）
+transhumans(https://www.transhumans.xyz/)
+
+立ち絵　：　わたおきば（https://wataokiba.net/）
+
+お題　：　この世界に名前をつけよう（http://namethisworld.xria.biz/）
+　　　　　ノーチラス（https://nanos.jp/nautilus123/）
