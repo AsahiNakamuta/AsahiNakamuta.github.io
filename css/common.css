@@ -16,7 +16,7 @@ body {
   color: #444444;
   letter-spacing: 0px;
   line-height: 1.8;
-  background-color: #f5f5f5;
+  background-color: #e8e8e8;
   overflow-x: clip;
 }
 @media screen and (max-width: 520px) {
@@ -213,51 +213,6 @@ h5 .ja {
   -moz-transform: rotate(45deg);
   -ms-transform: rotate(45deg);
   -o-transform: rotate(45deg);
-}
-
-/*－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－
-
-入力フォーム、ボタン
-
-－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－*/
-/* 入力フォーム */
-input,
-textarea {
-  -webkit-appearance: none;
-     -moz-appearance: none;
-          appearance: none;
-  padding: 10px 20px 8px 20px;
-  border: 1px solid #8B0000;
-  margin: 10px 0;
-}
-
-/* ボタン */
-.btn {
-  display: block;
-  -webkit-appearance: none;
-     -moz-appearance: none;
-          appearance: none;
-  background-color: #8B0000;
-  color: #ffffff;
-  text-align: center;
-  text-decoration: none;
-  padding: 3px 20px;
-  border: 2px solid #8B0000;
-  transition: 0.2s;
-  -webkit-transition: 0.2s;
-  -moz-transition: 0.2s;
-  -ms-transition: 0.2s;
-  -moz-transition: 0.2s;
-  border-radius: 999px;
-  -webkit-border-radius: 999px;
-  -moz-border-radius: 999px;
-  -ms-border-radius: 999px;
-  -o-border-radius: 999px;
-}
-.btn:hover {
-  cursor: pointer;
-  background-color: #444444;
-  color: #ffffff;
 }
 
 /*－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－
@@ -655,32 +610,6 @@ section section:last-of-type {
   -ms-transition: 0.2s;
   -moz-transition: 0.2s;
 }
-.globalnav__main .globalnav__item._has-child:hover .globalnav__child {
-  visibility: visible;
-  opacity: 1;
-  transition: 0.4s;
-  -webkit-transition: 0.4s;
-  -moz-transition: 0.4s;
-  -ms-transition: 0.4s;
-  -moz-transition: 0.2s;
-  -o-transition: 0.4s;
-}
-.globalnav__main .globalnav__child {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  background-color: #f5f5f5;
-  visibility: hidden;
-  opacity: 0;
-  transition: 0.2s;
-  -webkit-transition: 0.2s;
-  -moz-transition: 0.2s;
-  -ms-transition: 0.2s;
-  -moz-transition: 0.2s;
-}
-.globalnav__main .globalnav__child li:hover {
-  background-color: #444444;
-}
 
 /*  タブレット、スマホでの表示 */
 @media screen and (max-width: 1180px) {
@@ -769,130 +698,6 @@ section section:last-of-type {
     visibility: visible;
     opacity: 0.6;
     z-index: 99;
-  }
-}
-/*－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－
-
-サブメニュー
-
-－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－*/
-.submenu {
-  margin-bottom: 40px;
-  container-type: inline-size;
-}
-
-.submenu__main {
-  -moz-column-count: 2;
-       column-count: 2;
-}
-
-/* 親メニューのスタイル */
-.submenu__item {
-  position: relative;
-  padding: 10px;
-  -moz-column-break-inside: avoid;
-       break-inside: avoid;
-}
-.submenu__item a {
-  display: inline-block;
-  text-decoration: none;
-  word-break: break-word;
-  transition: 0.2s;
-  -webkit-transition: 0.2s;
-  -moz-transition: 0.2s;
-  -ms-transition: 0.2s;
-  -moz-transition: 0.2s;
-}
-.submenu__item > a {
-  padding: 10px 20px;
-  background-color: #8B0000;
-  color: #ffffff;
-  width: 100%;
-}
-
-/* 子、孫メニューのスタイル */
-.submenu__child > li {
-  position: relative;
-  padding-left: 1.8em;
-}
-.submenu__child > li::before {
-  position: absolute;
-  top: 1.4em;
-  left: 0;
-  content: "";
-  display: block;
-  height: 4px;
-  width: 3%;
-  background: #8B0000;
-  border-radius: 2px;
-  -webkit-border-radius: 2px;
-  -moz-border-radius: 2px;
-  -ms-border-radius: 2px;
-  -o-border-radius: 2px;
-}
-.submenu__child a {
-  margin: 10px 0;
-}
-
-.submenu__grandchild li {
-  font-size: 1.4rem;
-  display: grid;
-  grid-template-columns: 1fr auto;
-  align-items: center;
-  gap: 10px;
-}
-.submenu__grandchild li::before {
-  content: "";
-  display: block;
-  height: 10px;
-  background-color: transparent;
-  background-image: radial-gradient(#8B0000 20%, transparent 22%);
-  background-size: 10px 10px;
-  background-position: 0 0;
-}
-
-@container (max-width:600px) {
-  .submenu__main {
-    -moz-column-count: 1;
-         column-count: 1;
-    gap: 0;
-  }
-}
-/* リンク無効aタグのホバー時のスタイルを削除 */
-.submenu__main > ._has-child > a:hover {
-  background: #444444;
-  cursor: auto;
-}
-.submenu__main > ._has-child > a:hover::after {
-  display: none;
-}
-
-.submenu__child > ._has-child > a:hover {
-  background: none;
-  cursor: auto;
-}
-.submenu__child > ._has-child > a:hover::after {
-  display: none;
-}
-
-/* スマホ */
-@media screen and (max-width: 520px) {
-  /* クリックで表示 */
-  .submenu__item._has-child .submenu__child,
-  .submenu__item._has-child .submenu__child li._has-child .submenu__grandchild {
-    height: 0;
-    overflow: hidden;
-    opacity: 0;
-    transition: 0.4s;
-    -webkit-transition: 0.4s;
-    -moz-transition: 0.4s;
-    -ms-transition: 0.4s;
-  }
-  .submenu__item._has-child .submenu__child.active,
-  .submenu__item._has-child .submenu__child li._has-child .submenu__grandchild.active {
-    height: auto;
-    overflow: auto;
-    opacity: 1;
   }
 }
 /*－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－
