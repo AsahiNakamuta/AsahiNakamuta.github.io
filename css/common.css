@@ -123,8 +123,8 @@ h5 .ja {
   font-size: clamp(3rem, 2.6rem + 2vw, 5rem);
   margin: clamp(3rem, 2.6rem + 2vw, 5rem) 0;
   color: #8B0000;
-  -webkit-text-decoration: underline double #8B0000;
-          text-decoration: underline double #8B0000;
+  -webkit-text-decoration: underline #8B0000;
+          text-decoration: underline #8B0000;
   text-underline-offset: 8px;
   text-decoration-thickness: 0.2em;
 }
@@ -909,7 +909,7 @@ section section:last-of-type {
   align-items: center;
   width: 60px;
   height: 60px;
-  background-color: #8B0000;
+  background-color: #444444;
   border-radius: 50%;
   -webkit-border-radius: 50%;
   -moz-border-radius: 50%;
@@ -939,7 +939,7 @@ section section:last-of-type {
 
 @media (hover: hover) {
   .pageup:hover {
-    background-color: #444444;
+    background-color: #8B0000;
   }
 }
 /* スマホ */
@@ -960,4 +960,11 @@ footer {
   text-align: center;
   background-color: #8B0000;
   padding: 30px;
+}
+
+.profile__name {
+  font-size: clamp(2.4rem, 2.08rem + 1.6vw, 4rem);
+  margin: 20px 0;
+  color: #8B0000;
+  text-transform: none;
 }
