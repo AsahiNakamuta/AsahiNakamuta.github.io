@@ -52,3 +52,34 @@ document.addEventListener("DOMContentLoaded", function () {
     charaContent[index].classList.add("show");
   }
 });
+
+document.addEventListener('DOMContentLoaded', () => {
+  const hamburger = document.getElementById('js-hamburger');
+  const nav = document.getElementById('js-globalnav');
+
+  hamburger?.addEventListener('click', () => {
+    hamburger.classList.toggle('_active');
+    nav?.classList.toggle('active');
+  });
+});
+
+// ページ内リンクのスムーズスクロール
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+  anchor.addEventListener('click', function (e) {
+    e.preventDefault();
+    const href = this.getAttribute('href');
+    if (href === '#') {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    } else {
+      const target = document.querySelector(href);
+      if (target) {
+        target.scrollIntoView({
+          behavior: 'smooth'
+        });
+      }
+    }
+  });
+});

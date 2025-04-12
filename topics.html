@@ -4,7 +4,8 @@
 <head>
  <meta charset="UTF-8">
  <meta name="viewport" content="width=device-width, initial-scale=1.0">
- <title>Asahi Nakamuta</title>
+ <meta name="description" content="中牟田旭の記事一覧。研究や科学に関する記事を掲載しています。">
+ <title>記事一覧 - Asahi Nakamuta</title>
  <link rel="stylesheet" href="css/reset.css">
  <link rel="stylesheet" href="css/common.css">
  <link rel="stylesheet" href="css/each.css">
@@ -14,47 +15,61 @@
 
 <body>
  <!-- メニュー -->
- <nav id="js-globalnav" class="globalnav">
-  <ul class="globalnav__main flex">
+ <nav id="js-globalnav" class="globalnav" aria-label="メインナビゲーション">
+  <ul class="globalnav__main">
    <li class="globalnav__item"><a href="index.html">トップ</a></li>
    <li class="globalnav__item"><a href="cv.html">CV</a></li>
    <li class="globalnav__item"><a href="topics.html">記事一覧</a></li>
   </ul>
- </nav><!-- メニューここまで -->
+ </nav>
 
  <!-- メインコンテンツ -->
- <main class="mainwrapper" id="js-main">
+ <main class="container" id="js-main">
   <!--トピック一覧-->
   <section id="topics">
-    <h2 class="headingM">記事一覧</h2>
+    <h2 class="heading-m">記事一覧</h2>
     <ul class="topiclist">
-      <li class="topiclist__item"><a href="topics/earth.html" target="_blank" class="grid">
-       <div class="grid__left">
-         <img src="http://placehold.jp/675x182.png?text=バナー" alt="">
-       </div>
-       <div class="grid__right">
+      <li class="topiclist__item hover-bg">
+       <a href="topics/earth.html" class="grid">
+        <div class="grid__left">
+         <img src="images/earth/gps.png" alt="地球の大きさを測る">
+        </div>
+        <div class="grid__right">
          <h3>地球の大きさを測る</h3>
-         <p>a</p>
-       </div>
-      </a></li>
-      <li class="topiclist__item"><a href="topics/earth.html" target="_blank" class="grid">
-       <div class="grid__left">
-         <img src="http://placehold.jp/675x182.png?text=バナー" alt="">
-       </div>
-       <div class="grid__right">
+         <p>
+          エラトステネスは紀元前に地球の大きさを求めた。
+          これは人類史に残る偉大な業績だが、隔たった2地点間の距離を別の方法で測る必要がある点で実用性に乏しい。
+          この記事では僕が最近考えついた、家から出ずに地球の大きさを測る方法を紹介する。
+        </p>
+        </div>
+       </a>
+      </li>
+      <li class="topiclist__item hover-bg">
+       <a href="topics/sugarwater.html" class="grid">
+        <div class="grid__left">
+         <img src="images/sugarwater/thumbnail.png">
+        </div>
+        <div class="grid__right">
          <h3>砂糖水でつくる振動子</h3>
-         <p>a</p>
-       </div>
-      </a></li>
-      <li class="topiclist__item"><a href="topics/earth.html" target="_blank" class="grid">
-       <div class="grid__left">
-         <img src="http://placehold.jp/675x182.png?text=バナー" alt="">
-       </div>
-       <div class="grid__right">
-         <h3>研究者の人間関係</h3>
-         <p>a</p>
-       </div>
-      </a></li>
+         <p>
+          執筆中
+         </p>
+        </div>
+       </a>
+      </li>
+      <li class="topiclist__item hover-bg">
+       <a href="topics/multicanonical.html" class="grid">
+        <div class="grid__left">
+         <img src="images/multicanonical/entropy.png">
+        </div>
+        <div class="grid__right">
+         <h3>マルチカノニカル法</h3>
+         <p>
+          執筆中
+         </p>
+        </div>
+       </a>
+      </li>
     </ul>
    </section>
    <!--トピック一覧ここまで-->
@@ -62,19 +77,19 @@
  </main><!-- メインコンテンツここまで -->
 
  <!-- ページUP -->
- <a href="#" class="pageup" id="js-pageup">
+ <a href="#" class="pageup" id="js-pageup" aria-label="ページトップへ戻る">
   <div class="arrow"></div>
  </a>
  <!-- ページUPここまで -->
 
  <footer>
   <!-- クレジット -->
-  <small>© 2025 Asahi Nakamuta. Designed by <a href="https://utsusemi.hiroec.com" target="_blank">Utsusemi</a>.</small>
+  <small>© 2025 Asahi Nakamuta. Designed by <a href="https://utsusemi.hiroec.com" target="_blank" rel="noopener">Utsusemi</a>.</small>
   <!-- クレジットここまで -->
  </footer>
 
  <!--JavaScrip 読込-->
- <script src="js/common.js" type="text/javascript"></script>
+ <script src="js/common.js"></script>
 </body>
 
 </html>
