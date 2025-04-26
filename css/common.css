@@ -331,6 +331,14 @@ section section:last-of-type {
   z-index: 998;
   left: 0;
   background-color: #8B0000;
+  /* transform: translateX(100%); */
+  /* opacity: 0; */
+  transition: 0.4s;
+}
+
+.globalnav._active {
+  transform: translateX(0);
+  opacity: 1;
 }
 
 .globalnav__main {

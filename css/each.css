@@ -241,7 +241,7 @@ CV
 
 @media screen and (max-width: 768px) {
   .cv-content {
-    padding: 1.5rem var(--spacing-unit);
+    padding: 0.5rem var(--spacing-unit);
     margin: 0 var(--spacing-unit);
   }
 
