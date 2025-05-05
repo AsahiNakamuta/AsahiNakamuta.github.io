@@ -241,8 +241,8 @@ CV
 
 @media screen and (max-width: 768px) {
   .cv-content {
-    padding: 0.5rem var(--spacing-unit);
-    margin: 0 var(--spacing-unit);
+    padding: 0.5rem 0.5rem;
+    margin: 0 0;
   }
 
   .cv-item {
@@ -282,29 +282,37 @@ CV
   padding-bottom: 1rem;
 }
 
+.article h3 {
+  margin-top: 3rem;
+}
+
 .article p {
   font-size: 1.6rem;
   line-height: 1.8;
   margin: 1.5rem 0;
 }
 
-.article ol {
-  list-style-type: none;
-  padding: 0 0 0 2rem;
-  margin: 2rem 0;
-}
+/* .article ol { */
+  /* list-style-type: none; */
+  /* padding: 0 0 0 2rem; */
+  /* margin: 2rem 0; */
+/* } */
 
 .article ol li {
   margin: 1rem 0;
-  padding-left: 0.5rem;
-  position: relative;
+  /* padding-left: 10.5rem;
+  position: relative; */
 }
 
-.article ol li::before {
+.article ul li {
+  margin: 1rem 0;
+}
+
+/* .article ol li::before {
   content: "・";
   position: absolute;
   left: -1.5rem;
-}
+} */
 
 /* 記事内の画像コンテナ */
 .article__image-container {
