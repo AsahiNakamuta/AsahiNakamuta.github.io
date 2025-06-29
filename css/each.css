@@ -415,7 +415,8 @@ CV
 
 .topiclist__item .grid__left {
   width: 200px;
-  height: 100%;
+  height: auto;
+  aspect-ratio: 1 / 1;
   overflow: hidden;
 }
 
@@ -439,3 +440,26 @@ CV
   font-size: 1.4rem;
   line-height: 1.6;
 } */
+
+@media screen and (max-width: 768px) {
+  .topiclist__item .grid {
+    grid-template-columns: 1fr; /* Stack vertically */
+    gap: 1rem;
+  }
+
+  .topiclist__item .grid__left {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1 / 1;
+  }
+
+  .topiclist__item .grid__left img {
+    width: 100%;
+    height: auto;
+  }
+
+  .topiclist__item .grid__right {
+    padding: 1rem 0;
+    overflow: visible; /* Allow content to size naturally */
+  }
+}
