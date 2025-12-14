@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <meta name="description" content="洗濯物を部屋干しするか外干しするか計算して決める">
+ <title>外に干すか？中に干すか？ - Asahi Nakamuta</title>
+ <link rel="stylesheet" href="../css/reset.css">
+ <link rel="stylesheet" href="../css/common.css">
+ <link rel="stylesheet" href="../css/each.css">
+ <link rel="stylesheet"
+  href="https://maxst.icons8.com/vue-static/landings/line-awesome/line-awesome/1.3.0/css/line-awesome.min.css">
+ <script src="../js/loadCommon.js"></script>
+</head>
+
+<body>
+   <nav id="js-globalnav" class="globalnav" aria-label="メインナビゲーション">
+      <ul style="list-style-type:none; padding-inline-start:0;" class="globalnav__main">
+       <li class="globalnav__item"><a href="../index.html">トップ</a></li>
+       <li class="globalnav__item"><a href="../cv.html">CV</a></li>
+       <li class="globalnav__item"><a href="../topics.html">記事一覧</a></li>
+      </ul>
+     </nav>
+
+ <main class="article" id="js-main">
+   <h1 class="heading-m">外に干すか？中に干すか？</h1>
+
+   <h3>概要</h3>
+   <p class="summary">
+    冬に洗濯物を干す時、屋外と室内のどっちが速く乾くのか気になった。
+    計算してみた。
+   </p>
+
+   <p>
+    今までの人生で1000回は洗濯物を干したと思うけど、部屋干しと外干しのどっちが良いかはまだ結論が出ていない。
+    夏の晴れた日なら問答無用で外干しに軍配が上がる一方で、冬にどうすれば良いかは非自明だ。
+    定性的に考えると、風や太陽光の点では外が有利で、空気の温度に関しては中が有利だろう。
+    つまり非自明なのは向きの異なる複数の要因があるからで、それぞれの寄与を定量的に評価すれば問題が解けそうだ。
+    やってみよう。
+   </p>
+
+   <p>問題設定：</p>
+   <ul>
+    <li>簡単のため、中と外で温度と風速のみが異なり、太陽光や湿度を含めた要因はすべて同じという状況を考える</li>
+    <li>空気を二原子分子理想気体と近似する</li>
+    <li>屋内と屋外の温度差を $\Delta T$ Kとおく</li>
+    <li>屋内は無風とし、屋外の風速を $v$ m/sとおく</li>
+   </ul>
+
+   <p>
+    洗濯物が乾くのは洗濯物内の液体の水分子が空気や光からエネルギーを受け取り蒸発する現象なので、上の設定では中と外で空気の分子の運動エネルギーを比較すれば良い。
+    つまり分子の運動エネルギーにおける熱と風の寄与をそれぞれ評価すれば良い。
+   </p>
+
+   <p>
+    熱力学と統計力学で習ったように、温度 $T$ の理想気体1molが持つ運動エネルギーは $cRT$ である。
+    ただし $R=8.3$ J/K/molは気体定数であり、定数 $c$ は二原子分子なので5/2である。
+    一方で分子1molあたりの風速による運動エネルギーは $\frac{1}{2}m v^2$ である。
+    ただし $m$ は分子量で、空気の場合約29。
+    というわけで以下の式の符号を調べて、これが正なら部屋干し、負なら外干しが良いということになる。
+   </p>
+
+   $$
+   \frac{5}{2}\times 8.3\Delta T - \frac{29}{2} v^2
+   $$
+
+   <p>
+    注目するべきは第１項と第２項のオーダーが等しいということだ。
+    試しに現実的な設定として $\Delta T = 10$ K, $v = 3$ m/s を代入すると、それぞれ208 J/molと130 J/molとなり、第１項の方が少し大きい。
+    したがって部屋干しの勝ち。
+    ところがちょっと風が強くて $v = 4$ m/s になると大小関係は逆転して、外干しの方が速く乾くことになる。
+    つまり、<strong>外干しと部屋干しかのどっちが良いかは日によって変わる</strong>。
+    経験的にもこれは正しそうだ。
+   </p>
+
+   <p>
+    さて風と気温で決着がつかないとなると、無視していた太陽光の効果を考えてみたくなる。
+    しかしその場合は単位面積あたりに入ってくるエネルギーを比較するために光子の密度と気体分子の密度を加味する必要があり、途端に問題が面倒になるのでやめておこう。
+    気になった人は計算してみてください。
+   </p>
+   
+   <div style="margin-top: 60px;"></div>
+   <a href="../topics.html" target="_blank">記事一覧に戻る</a>
+ </main>
+
+ <a href="#" class="pageup" id="js-pageup" aria-label="ページトップへ戻る">
+  <div class="arrow"></div>
+ </a>
+
+ <footer>
+  <small>© 2025 Asahi Nakamuta. Designed by <a href="https://utsusemi.hiroec.com" target="_blank" rel="noopener">Utsusemi</a>.</small>
+ </footer>
+
+ <script src="../js/common.js"></script>
+</body>
+
+</html>
