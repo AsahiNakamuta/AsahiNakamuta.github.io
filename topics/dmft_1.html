@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <meta name="description" content="LiとYorkeは、1975年の Period three implies chaosという題の論文で、離散力学系において3周期点が存在するならば任意の自然数の周期点が存在するというすごい定理を示した。この記事ではその証明を解説する。">
+ <title>動的平均場理論入門1 - Asahi Nakamuta</title>
+ <link rel="stylesheet" href="../css/reset.css">
+ <link rel="stylesheet" href="../css/common.css">
+ <link rel="stylesheet" href="../css/each.css">
+ <link rel="stylesheet"
+  href="https://maxst.icons8.com/vue-static/landings/line-awesome/line-awesome/1.3.0/css/line-awesome.min.css">
+ <script src="../js/loadCommon.js"></script>
+ <style>
+    details {
+      margin: 10px 0;
+    }
+    details > *:not(summary) {
+        padding-left: 20px;
+      }
+    details[open] {
+        background-color: #f5f5f5; /* 背景色（うすいグレー） */
+        padding: 10px;             /* 内側の余白 */
+        border-radius: 5px;        /* 角を少し丸くする */
+      }
+ </style>
+</head>
+
+<body>
+    <nav id="js-globalnav" class="globalnav" aria-label="メインナビゲーション">
+        <ul style="list-style-type:none; padding-inline-start:0;" class="globalnav__main">
+            <li class="globalnav__item"><a href="../index.html">トップ</a></li>
+            <li class="globalnav__item"><a href="../cv.html">CV</a></li>
+            <li class="globalnav__item"><a href="../topics.html">記事一覧</a></li>
+        </ul>
+    </nav>
+
+ <main class="article" id="js-main">
+    <h1 class="heading-m">動的平均場理論入門1</h1>
+
+    <h3>概要</h3>
+    <p class="summary">
+        動的平均場理論（DMFT）の入門シリーズ第一弾として、深層学習ダイナミクスの理論解析の例を紹介する。
+        具体的にはBordelon & Pehlevan (2022) の付録Dを踏襲して、なるべく行間を埋めながら説明する。
+    </p>
+
+    <h3>論文へのリンク</h3>
+    <p>
+      <a href="https://arxiv.org/abs/2205.09653" target="_blank">Bordelon & Pehlevan, Self-Consistent Dynamical Field Theory of Kernel Evolution in Wide Neural Networks (2022)</a>
+    </p>
+
+    <h3>問題設定</h3>
+    <p>
+        次のような深層ニューラルネットワークを考えよう。
+        \begin{align}
+            f_\mu &= \frac{1}{\gamma\sqrt{N}} \boldsymbol{w}_L \cdot \phi(\boldsymbol{h}_\mu^L) \\
+            \boldsymbol{h}_\mu^{l+1} &= \frac{1}{\sqrt{N}} \boldsymbol{W}^l \phi(\boldsymbol{h}_\mu^l) \\
+            \boldsymbol{h}_\mu^1 &= \frac{1}{\sqrt{D}} \boldsymbol{W}^0 \boldsymbol{x}_\mu
+        \end{align}
+        ここで $\{\boldsymbol{x}_\mu\}$ は $D$ 次元の入力データ、$\boldsymbol{h}^l_\mu$ はそれに対する第 $l$ 層のニューロンの $N$ 次元pre-activationベクトル、$f_\mu$ は最終層のスカラー出力、
+        $\boldsymbol{W}^l$ は第 $l$ 層の重み行列、$\phi$ は活性化関数、$\gamma$ は学習のレジームを調整するハイパーパラメータである。
+    </p>
+    <p>
+        このネットワークをフルバッチの勾配降下法で学習する。
+        すなわち誤差関数 $\mathcal{L} = \sum_\mu l(f_\mu, y_\mu)$ と学習率 $\eta$ を用いて、
+        \begin{align}
+            \frac{d\boldsymbol{\theta}}{dt} &= -\eta\frac{\partial\mathcal{L}}{\partial\boldsymbol{\theta}}
+        \end{align}
+        と時間発展させる。
+        ただし $\boldsymbol{\theta} = \text{Vec}\{\boldsymbol{W}^0, \dots, \boldsymbol{W}^{L-1}, \boldsymbol{w}_L\}$ は学習する全ての重みをベクトル化したものである。
+    </p>
+    <p>
+        さて、ここで考えたいのは出力の学習ダイナミクス $f_\mu(t)$ （正確にいうと、全てのデータを使って重みを学習した時の、一つのデータ$\boldsymbol{x}_\mu$に対する出力$f_\mu$の学習ダイナミクス）である。
+        ナイーブに考えれば連鎖率から
+        $\frac{\partial f_\mu}{\partial t}=\nabla_{\boldsymbol{\theta}=\boldsymbol{\theta}(t)}f_\mu \cdot \frac{d\boldsymbol\theta(t)}{dt}$
+        であり、これと上の式たちを使えば学習ダイナミクスを陽に計算できる。
+        というかこの計算を離散化して実行するのが通常の深層学習である。
+        しかし、理論的に解析する場合には、この方法は以下に示す理由から実用的でも本質的でもない。
+    </p>
+    
+    <h3>ナイーブな方法の欠点</h3>
+    <ul>
+      <li>ネットワークの各層の幅 $N$ を無限大にする極限では計算が無限に煩雑になってしまう</li>
+      <li>重みはランダムに初期化されるので、それぞれのrealizationごとにダイナミクスを調べても一般的な事実が得られない</li>
+    </ul>
+
+    <p>
+        これは「理解」に関するよくある議論の具体例だと思う。
+        要素の数がきわめて多くなったり相互作用がランダムになったりする場合には、それぞれの要素や相互作用を個別に調べるだけでは「理解」したことにはならない。
+        その代わりに巨視的な量やその期待値を計算することで初めて、系の典型的な性質がわかる。
+        動的平均場理論はまさにそのための手続きである。
+    </p>
+
+    <h3>この記事の目標と構成</h3>
+    <p>
+        上で説明した通り、いま手元にあるのは、出力の学習ダイナミクスを微視的なパラメータで記述した式
+        $\frac{\partial f_\mu}{\partial t}=\nabla_{\boldsymbol{\theta}=\boldsymbol{\theta}(t)}f_\mu \cdot \frac{d\boldsymbol\theta(t)}{dt}$
+        である。
+        それでは不便なので、パラメータではなく巨視変数であるカーネルで記述したい。
+        より正確には、パラメータのダイナミクスを一切参照せずに、<strong>カーネルと出力だけで閉じた時間発展方程式を得たい</strong>。
+    </p>
+    <p>
+        これを実現するために、まず出力のダイナミクスをカーネルで表示する。
+        この部分は割と簡単なので直後に説明する。
+        難しいのはそのカーネルの時間発展をパラメータを用いずに表す部分だ。
+        動的平均場理論の核心はここにあるので、計算の前にその気持ちと使う道具を紹介する。
+        具体的な計算は非常に複雑なため、中間層が1層の場合でウォームアップしてから、一般の深層ネットワークの場合を説明する。
+    </p> 
+
+    <h3>出力ダイナミクスをカーネルで表示する</h3>
+    <details>
+        <summary>$\frac{\partial f_\mu}{\partial t}=\sum_\alpha K_{\mu\alpha}^{NTK} (t,t) \Delta_\alpha (t)$ と表せる（クリックして表示）</summary>
+        <p>
+            NTKカーネル $K_{\mu\alpha}^{NTK} (t,s)$ とは、ニューラルネットワークの出力の勾配の内積である。
+            $$
+            K_{\mu\alpha}^{NTK} (t,s) = \gamma^2 \nabla_{\boldsymbol{\theta}(t)} f_\mu(t) \cdot \nabla_{\boldsymbol{\theta}(s)} f_\alpha(s)
+            $$
+            通常の定義では係数 $\gamma^2$ は付かないが、今の設定では出力 $f$ が $1/\gamma$ 倍されているのでそれを打ち消すために付けている。
+            NTKはNeural Tangent Kernelの略なのでNTカーネルと呼ぶのが正しいのかもしれないが、変な感じがするのでこの記事ではNTKカーネルと呼ぶ。
+        </p>
+        <p>
+            ではこのNTKカーネルを使って出力ダイナミクスが書けることを示そう。
+            \begin{align}
+                \frac{\partial f_\mu}{\partial t} &= \nabla_{\boldsymbol{\theta}(t)}f_\mu(t) \cdot \frac{d\boldsymbol\theta(t)}{dt} \\
+                &= -\eta\nabla_{\boldsymbol{\theta}(t)}f_\mu(t) \cdot\frac{\partial\mathcal{L}}{\partial\boldsymbol{\theta}} \\
+                &= \eta\nabla_{\boldsymbol{\theta}(t)}f_\mu(t) \cdot \sum_\alpha \nabla_{\boldsymbol{\theta}(t)} f_\alpha(t) \Delta_\alpha(t) \\
+                &= \eta \sum_\alpha \nabla_{\boldsymbol{\theta}(t)}f_\mu(t) \cdot \nabla_{\boldsymbol{\theta}(t)} f_\alpha(t) \Delta_\alpha(t) \\
+                &= \frac{\eta}{\gamma^2}\sum_\alpha K_{\mu\alpha}^{NTK} (t,t) \Delta_\alpha(t)
+            \end{align}
+            ここで $\Delta_\mu(t) = \left.-\frac{\partial\mathcal{L}}{\partial f_\mu}\right|_{f_\mu=f_\mu(t)}$ は誤差関数の微分で、設定に応じて具体的に書き下せる。
+            例えばMSE lossの場合は $\Delta_\mu(t) = y_\mu - f_\mu(t)$ である。また、学習が $O_\gamma(1)$ で進むように以降では学習率を $\eta=\gamma^2$ とする。
+            以上から題意は示された。
+        </p>
+        <p>
+            この結果を味わってみよう。
+            $\Delta_\alpha(t)$ は出力 $f_\alpha(t)$ と教師データ $y_\alpha$ を使って簡単に書き下せるので、$f(t)$ の時間発展を考えるにあたっては何も問題ない。
+            逆にNTKカーネル $K_{\mu\alpha}^{NTK} (t,t)$ の方はパラメータに依存してしまっている。
+            したがってNTKカーネルの時間発展をパラメータを用いずに巨視変数だけで表すことができれば、出力が閉じた形で表せる。<br>
+            また別の見方をすると、データ $\alpha$ に対する出力の学習がNTKカーネル $K_{\mu\alpha}^{NTK} (t,t)$ を通して他のデータ $\mu$ の学習に影響を与えているともいえる。
+        </p>
+    </details>
+    <details>
+        <summary>$K_{\mu\alpha}^{NTK} (t,s) = \sum_{l=0}^L \Phi_{\mu\alpha}^{l} (t,s)G_{\mu\alpha}^{l+1} (t,s)$ と表せる（クリックして表示）</summary>
+        <p>
+            特徴量カーネル $\Phi_{\mu\alpha}^{l} (t,s)$ と勾配カーネル $G_{\mu\alpha}^{l} (t,s)$ をそれぞれ次のように定義する。
+            \begin{align}
+                \Phi_{\mu\alpha}^{l} (t,s) &= \frac{1}{N} \phi(\boldsymbol{h}_\mu^l(t)) \cdot \phi(\boldsymbol{h}_\alpha^l(s)) \\
+                G_{\mu\alpha}^{l} (t,s) &= \frac{1}{N} \boldsymbol{g}_\mu^l(t) \cdot \boldsymbol{g}_\alpha^l(s)
+            \end{align}
+            ただし勾配ベクトル $\boldsymbol{g}_\mu^l(t)$ の定義は次の通り。
+            $$
+                \boldsymbol{g}_\mu^l(t) = \gamma\sqrt{N} \frac{\partial f_\mu(t)}{\partial \boldsymbol{h}^l_\mu(t)}
+            $$
+        </p>
+        <p>
+            直感的には、特徴量カーネル $\Phi_{\mu\alpha}^{l} (t,s)$ はデータ $\mu,\alpha$ それぞれに対する第 $l$ 層の活性化ベクトル $\phi \left( \boldsymbol{h}^l_\mu(t) \right),\phi \left( \boldsymbol{h}^l_\alpha(s) \right)$ の内積、
+            勾配ベクトル $\boldsymbol{g}_\mu^l(t)$ は第 $l$ 層の特徴量を変化させた時の出力の変化を表すベクトル、
+            勾配カーネル $G_{\mu\alpha}^{l} (t,s)$ はデータ $\mu,\alpha$ それぞれに対する第 $l$ 層の勾配ベクトルの内積である。
+        </p>
+        <p>
+            NTKカーネルの定義を変形して題意の式を得よう。
+            \begin{align}
+                K_{\mu\alpha}^{NTK} (t,s) &= \gamma^2 \nabla_{\boldsymbol{\theta}(t)} f_\mu(t) \cdot \nabla_{\boldsymbol{\theta}(s)} f_\alpha(s) \\
+                &= \gamma^2 \sum_{l=0}^L \sum_{i,j=1}^N \nabla_{\boldsymbol{W}_{ij}^l(t)} f_\mu(t) \cdot \nabla_{\boldsymbol{W}_{ij}^l(s)} f_\alpha(s) \\
+            \end{align}
+        </p>
+        <p>
+            ここで
+            \begin{align}
+                \nabla_{\boldsymbol{W}_{ij}^l(t)} f_\mu(t) &= \frac{\partial f_\mu(t)}{\partial \boldsymbol{h}_\mu^{l+1}(t)} \cdot \frac{\partial \boldsymbol{h}_\mu^{l+1}(t)}{\partial \boldsymbol{W}_{ij}^l(t)} \\
+                &= \left(\frac{\partial f_\mu(t)}{\partial \boldsymbol{h}_\mu^{l+1}(t)}\right)_i  \left(\frac{1}{\sqrt{N}} \phi(\boldsymbol{h}_\mu^l(t))\right)_j \\
+                &= \left(\frac{1}{\gamma\sqrt{N}}\boldsymbol{g}_\mu^{l+1}(t)\right)_i  \left(\frac{1}{\sqrt{N}} \phi(\boldsymbol{h}_\mu^l(t))\right)_j \\
+            \end{align}
+            を代入すると、
+        </p>
+        <p>
+            \begin{align}
+                K_{\mu\alpha}^{NTK} (t,s) &= \gamma^2 \sum_{l=0}^L \left(\frac{1}{\gamma^2N}\sum_{i=1}^N \left(\boldsymbol{g}_\mu^{l+1}(t)\right)_i
+                \left(\boldsymbol{g}_\alpha^{l+1}(s)\right)_i \right)
+                \left(\frac{1}{N}\sum_{j=1}^N \left( \phi(\boldsymbol{h}_\mu^l(t))\right)_j \left( \phi(\boldsymbol{h}_\alpha^l(s))\right)_j \right) \\
+                &= \sum_{l=0}^L \frac{1}{N}\boldsymbol{g}_\mu^{l+1}(t)\cdot\boldsymbol{g}_\alpha^{l+1}(s) \frac{1}{N}\phi(\boldsymbol{h}_\mu^l(t))\cdot\phi(\boldsymbol{h}_\alpha^l(s)) \\
+                &= \sum_{l=0}^L \Phi_{\mu\alpha}^{l} (t,s)G_{\mu\alpha}^{l+1} (t,s) \\
+            \end{align}
+            以上から題意は示された。
+            ただし端の層には注意が必要。
+        </p>
+        <details>
+            <summary>入力層 $l=0$ について（クリックして表示）</summary>
+            <p>
+                $\nabla_{\boldsymbol{W}_{ij}^0(t)} f_\mu(t) = \left(\frac{\partial f_\mu(t)}{\partial \boldsymbol{h}_\mu^{1}(t)}\right)_i \cdot \left(\frac{1}{\sqrt{D}} \boldsymbol{x}_\mu\right)_j \\$なので、
+                $$
+                    \gamma^2 \nabla_{\boldsymbol{W}^0(t)} f_\mu(t) \cdot \nabla_{\boldsymbol{W}^0(s)} f_\alpha(s)  = G_{\mu\alpha}^{1} (t,s) \frac{1}{D} \boldsymbol{x}_\mu \cdot  \boldsymbol{x}_\alpha
+                $$
+                よって一貫性のために $\Phi_{\mu\alpha}^{0} (t,s) = \frac{1}{D} \boldsymbol{x}_\mu \cdot \boldsymbol{x}_\alpha = K_{\mu\alpha}^{x}$ (入力のグラム行列)とする。
+            </p>
+        </details>
+        <details>
+            <summary>最終層 $l=L$ について（クリックして表示）</summary>
+            <p>
+                $\nabla_{\boldsymbol{w}^L(t)} f_\mu(t) = \frac{1}{\gamma\sqrt{N}} \phi(\boldsymbol{h}_\mu^L(t))$なので、
+                $$
+                    \gamma^2 \nabla_{\boldsymbol{w}^L(t)} f_\mu(t) \cdot \nabla_{\boldsymbol{w}^L(s)} f_\alpha(s)  = \Phi_{\mu\alpha}^{L} (t,s)
+                $$
+                よって一貫性のために $G_{\mu\alpha}^{L+1} (t,s) = \boldsymbol{1}$ とする。
+            </p>
+        </details>
+        <p>
+            この結果を味わってみよう。
+            このDNNには層が $L$ 枚あって各層に $N^2$ 個のパラメータがあるので、パラメータの総数は大体 $N^2L$ である。
+            NTKカーネルは全てのパラメータに関する勾配の情報なので、愚直にやると計算量は $O(N^2L)$である。
+            層の幅 $N$ を無限大にする極限を考えたいのにとんでもない。
+        </p>
+        <p>
+            しかし、特徴量カーネルと勾配カーネルは両方とも $O(N)$ で計算できるので、導出した関係式を使えばNTKカーネルの計算が $O(NL)$ でできる。
+            ここからさらに $O(L)$ にするために動的平均場理論を使う。
+        </p>
+
+    </details>
+    <p>
+        以上から、特徴量カーネル $\Phi$ と勾配カーネル $G$ を使って出力の時間発展が次のように表せる。
+        $$
+            \frac{\partial f_\mu}{\partial t} = \sum_\alpha \sum_{l=0}^L \Phi_{\mu\alpha}^{l} (t,t)G_{\mu\alpha}^{l+1} (t,t) \Delta_\alpha(t)
+        $$
+        次の問題はカーネル $\Phi, G$ の時間発展を求めることだ。
+        各カーネルはそれぞれ特徴量ベクトルと勾配ベクトルで定義されているので、各ベクトルの時間発展を求めれば良い。
+    </p>
+
+    <h3>特徴量ベクトルと勾配ベクトルの時間発展</h3>
+    <details>
+        <summary>
+            $\boldsymbol{h}^{l+1}_\mu(t) 
+            = \frac{1}{\sqrt{N}}\boldsymbol{W}^{l}(0)\phi(\boldsymbol{h}^l_\mu(t))
+            + \frac{\gamma}{\sqrt{N}}\int_0^t ds \sum_\nu\Delta_\nu(s) \boldsymbol{g}_\nu^{l+1}(s)\Phi_{\nu\mu}^{l} (s,t)$（クリックして表示）
+        </summary>
+        <p>
+            これは特徴量ベクトル $\boldsymbol{h}^{l+1}_\mu$ の時間発展を、隣の層の特徴量ベクトル $\boldsymbol{h}^l_\nu$、同じ層の勾配ベクトル $\boldsymbol{g}_\nu^{l+1}$、隣の層の特徴量カーネル $\Phi_{\nu\mu}^{l}$ を使って表したものである。
+            これを導出しよう。
+            定義から $\boldsymbol{h}^{l+1}_\mu(t) = \frac{1}{\sqrt{N}}\boldsymbol{W}^{l}(t)\phi(\boldsymbol{h}^l_\mu(t))$ なので、パラメータ $\boldsymbol{W}^l(t)$ の時間発展を求めれば良い。
+        </p>
+        <p>
+            パラメータが満たす微分方程式を変形すると、
+            \begin{align}
+                \frac{d\boldsymbol{W}_{ij}^{l}(t)}{dt} &= -\gamma^2\nabla_{\boldsymbol{W}_{ij}^{l}(t)} \mathcal{L}(f(t)) \\
+                &= \gamma^2\sum_\mu\Delta_\mu(t) \frac{\partial f_\mu}{\partial \boldsymbol{h}_\mu^{l+1}(t)} \cdot \frac{\partial \boldsymbol{h}_\mu^{l+1}(t)}{\partial \boldsymbol{W}_{ij}^{l}(t)} \\
+                &= \gamma^2\sum_\mu\Delta_\mu(t) \left(\frac{\boldsymbol{g}_\mu^{l+1}(t)}{\gamma\sqrt{N}}\right)_i \left(\frac{\phi(\boldsymbol{h}_\mu^l(t))}{\sqrt{N}}\right)_j \\
+                &= \frac{\gamma}{N}\sum_\mu\Delta_\mu(t) \left(\boldsymbol{g}_\mu^{l+1}(t)\right)_i \left(\phi(\boldsymbol{h}_\mu^l(t))\right)_j \\
+                \therefore \boldsymbol{W}^{l}(t) &= \boldsymbol{W}^{l}(0) + \frac{\gamma}{N}\int_0^t ds \sum_\mu\Delta_\mu(s) \boldsymbol{g}_\nu^{l+1}(s)\phi(\boldsymbol{h}_\mu^l(s))^\top \\
+            \end{align}
+        </p>
+        <p>
+            これを $\boldsymbol{h}^{l+1}_\mu(t) = \frac{1}{\sqrt{N}}\boldsymbol{W}^{l}(t)\phi(\boldsymbol{h}^l_\mu(t))$ に代入して目的の式を得る。
+            流れをまとめると、第 $l$ 層と第 $l+1$ 層の特徴量ベクトルの関係式にパラメータの時間発展を代入して、特徴量ベクトルの時間発展を求めている。
+        </p>
+    </details>
+    <details>
+        <summary>
+            $
+            \left\{
+            \begin{aligned}
+                &\boldsymbol{g}^{l}_\mu(t) = \dot{\phi}(\boldsymbol{h}^l_\mu(t)) \odot \boldsymbol{z}^{l}_\mu(t) \\
+                &\boldsymbol{z}^{l}_\mu(t) = \frac{1}{\sqrt{N}}\boldsymbol{W}^{l\top}(0)\boldsymbol{g}^{l+1}_\mu(t)
+                + \frac{\gamma}{\sqrt{N}}\int_0^t ds \sum_\nu\Delta_\nu(s) \phi(\boldsymbol{h}_\nu^{l}(s))G_{\nu\mu}^{l+1} (s,t)
+            \end{aligned}
+            \right.
+            $（クリックして表示）
+        </summary>
+        <p>
+            前項の流れを踏襲したいので、まず勾配ベクトルの漸化式を求める。
+            特徴量ベクトルの場合は定義から明らかに順方向の漸化式が得られた。
+            勾配ベクトルの場合は微分の連鎖率から逆方向の漸化式が得られる。
+            \begin{align}
+                \left(\boldsymbol{g}^{l}_\mu(t)\right)_i &= \gamma\sqrt{N}\left(\frac{\partial f_\mu}{\partial \boldsymbol{h}_\mu^{l}(t)}\right)_i \\
+                &= \gamma\sqrt{N}\frac{\partial f_\mu}{\partial \boldsymbol{h}_\mu^{l+1}(t)} \cdot \frac{\partial \boldsymbol{h}_\mu^{l+1}(t)}{\left(\partial \boldsymbol{h}_\mu^{l}(t)\right)_i} \\
+                &= \sum_j \left(\boldsymbol{g}_\mu^{l+1}(t)\right)_j \frac{\partial \left(\boldsymbol{h}_\mu^{l+1}(t)\right)_j}{\partial \left(\boldsymbol{h}_\mu^{l}(t)\right)_i} \\
+                &= \sum_j \left(\boldsymbol{g}_\mu^{l+1}(t)\right)_j \frac{1}{\sqrt{N}}\boldsymbol{W}^{l}_{ji}(t)\dot{\phi}(\boldsymbol{h}_\mu^{l}(t))_i \\
+                &= \frac{1}{\sqrt{N}}\dot{\phi}(\boldsymbol{h}_\mu^{l}(t))_i\left(\boldsymbol{W}^{l\top}(t)\boldsymbol{g}_\mu^{l+1}(t)\right)_i \\
+                \therefore \boldsymbol{g}^{l}_\mu(t) &= \dot{\phi}(\boldsymbol{h}_\mu^{l}(t)) \odot \boldsymbol{z}^{l}_\mu(t)
+            \end{align}
+            ただし $\boldsymbol{z}^{l}_\mu(t) = \frac{1}{\sqrt{N}}\boldsymbol{W}^{l\top}(t)\boldsymbol{g}^{l+1}_\mu(t)$ 。
+            これは誤差逆伝播の計算と全く同じ。
+            こうして求めた漸化式に前項で求めた $\boldsymbol{W}^l(t)$ を代入して目的の式を得る。
+        </p>
+    </details>
+
+    <figure class="article__image-container">
+        <img src="../images/dmft1/dependency.jpeg">
+        <figcaption>図1: 変数の依存関係</figcaption>
+    </figure>
+    <p>
+        注目するべきは、学習によって時間変化するパラメータ $\boldsymbol{W}^{l}(t)$ はもはや登場せず、パラメータの寄与は初期値 $\boldsymbol{W}^{l}(0)$ のみに現れている点だ。
+        別の言い方をすれば、各ベクトルの初期化だけにランダムネスが現れ、時間発展の方は出力とベクトルとカーネルで閉じた形になっている。
+        変数の依存関係を図１にまとめた。
+        $\boldsymbol{W}^{l}(t)$ の分布は非常に複雑な一方で初期値 $\boldsymbol{W}^{l}(0)$ の分布はこちらが指定できるため、これは縁起の良い形だ。
+    </p>
+
+
+    <h3>動的平均場理論</h3>
+    <p>
+        前置きが長くなったが、ここからが本題。
+        この記事の目標は幅無限大の極限で出力の学習ダイナミクスを理論解析することだ。
+        素朴に考えるとパラメータの時間発展が主役になってしまうが、ここまでの計算によってパラメータの初期値とベクトルの時間発展で記述できるようになった。
+        残る問題は①パラメータの初期化にランダムネスがあることと、②ベクトルの長さが無限大になってしまうことだ。
+        動的平均場理論を用いて、①ガウス積分で期待値を取る方法と②鞍点法によってベクトルではなくスカラーで記述する方法でそれぞれ解決する。
+    </p>
+    <p>
+        動的平均場理論(Dynamical Mean Field Theory, DMFT)とは、①クエンチした確率変数が②大量に集まった系での、③巨視変数の④ダイナミクスを求める方法である。
+    </p>
+    <ol>
+        <li>
+            確率変数がクエンチしているとは、注目する時間発展の間に変化しないという意味である。
+            例えばリカレントネットワークの結合をランダムに定めて、その結合のもとでニューロンの状態を時間発展させる系や、フィードフォワードネットワークの初期重みをランダムに定めて出力を学習する系が考えられる。
+            後者の場合は重みが時間発展するが、確率性があるのは重みの初期化のみで、それが決まれば残りは決定論的に発展するという点が重要である。
+            この記事ではフィードフォワードネットワークの例を考える。
+        </li>
+        <li>
+            そのような変数が大量に集まる時、
+        </li>
+        <li>
+            巨視的な変数は、Ising系なら磁化、リカレントネットワークなら平均活動度、フィードフォワードネットワークなら後で登場する特徴量カーネル $\Phi_{\mu\alpha}$ と勾配カーネル $G_{\mu\alpha}$ などである。
+            オーダーパラメータともいう。
+        </li>
+        <li>
+            ダイナミクスを求めることから動的という名前がついている（と僕は思っている）。
+            したがって求めるべき対象は、巨視変数のダイナミクスを閉じた形で定める時間発展方程式や、相関関数のセルフコンシステント方程式である。
+        </li>
+    </ol>
+
+    <h3>モーメント生成関数</h3>
+
+
+    <h3>ウォームアップ：L=1の場合</h3>
+
+    <h3>本題：L>1の場合</h3>
+
+    <details>
+        <summary>証明（クリックして表示）</summary>
+
+        <figure class="article__image-container">
+            <img src="../images/li-yorke-1975/図5.jpeg" alt="補題0の証明">
+            <figcaption>図5: 補題0の証明</figcaption>
+        </figure>
+        
+        <p>
+            図のように $Q$ の端点 $r, s \in I$ を取ればOK。
+            $G$ は連続関数なので、$I_1$ の端点の逆像が $I$ に含まれる。
+            その中から１つずつ取ってきて $p, q$ とおく。
+            $p < q$ ならば、$r$ を下端の逆像のうち $q$ を超えない最大のもの、$s$ を上端の逆像のうち $r$ を下回らない最小のものとする。
+            $p > q$ の場合も同様。
+        </p>
+    </details>
+
+    <h3>元論文の誤植</h3>
+    <p>ページ数はarxivのv3のPDFファイルに準拠している。</p>
+    <table border="1">
+        <tr>
+            <th>ページ</th>
+            <th>行</th>
+            <th>誤</th>
+            <th>正</th>
+        </tr>
+        <tr>
+            <td>3</td>
+            <td>式(2)と(3)の間</td>
+            <td>$K_{\mu\alpha}^{NTK}(t,s)=\nabla_\theta f_\mu \cdot \nabla_\theta f_\alpha$</td>
+            <td>$K_{\mu\alpha}^{NTK}(t,s)=\gamma^2 \nabla_\theta f_\mu \cdot \nabla_\theta f_\alpha$</td>
+        </tr>
+        <tr>
+            <td>22</td>
+            <td>式(20)</td>
+            <td>$\Delta_\alpha(s)$</td>
+            <td>$\Delta_\mu(s)$</td>
+        </tr>
+        <tr>
+            <td>22</td>
+            <td>式(21)の1行目</td>
+            <td>$\boldsymbol{g}_\nu^{l+1}(t)$</td>
+            <td>$\boldsymbol{g}_\mu^{l+1}(s)$</td>
+        </tr>
+        <tr>
+            <td>22</td>
+            <td>式(22)</td>
+            <td>$\boldsymbol{\chi}_\mu^l(t)$</td>
+            <td>$\boldsymbol{\chi}_\nu^{l+1}(t)$</td>
+        </tr>
+        <tr>
+            <td>23</td>
+            <td>式(26)</td>
+            <td>$d\boldsymbol{\chi}d\hat{\boldsymbol{\chi}}$</td>
+            <td>$d\boldsymbol{\chi}_\mu d\hat{\boldsymbol{\chi}}_\mu$</td>
+        </tr>
+        <tr>
+            <td>23</td>
+            <td>式(27)の1行目</td>
+            <td>$\exp\left(N\hat{\Phi}_{\mu\alpha}(t,s)\dots\right)$</td>
+            <td>$\exp\left(\hat{\Phi}_{\mu\alpha}(t,s)\dots\right)$</td>
+        </tr>
+        <tr>
+            <td>23</td>
+            <td>式(27)の3行目</td>
+            <td>$\exp\left(N\hat{G}_{\mu\alpha}(t,s)\dots\right)$</td>
+            <td>$\exp\left(\hat{G}_{\mu\alpha}(t,s)\dots\right)$</td>
+        </tr>
+    </table>
+
+  
+    <div style="margin-top: 60px;"></div>
+    <a href="../topics.html" target="_blank">記事一覧に戻る</a>
+  </main>
+
+  <a href="#" class="pageup" id="js-pageup" aria-label="ページトップへ戻る">
+    <div class="arrow"></div>
+  </a>
+
+  <footer>
+    <small>© 2025 Asahi Nakamuta. Designed by <a href="https://utsusemi.hiroec.com" target="_blank" rel="noopener">Utsusemi</a>.</small>
+  </footer>
+
+  <script src="../js/common.js"></script>
+</body>
+
+</html>
