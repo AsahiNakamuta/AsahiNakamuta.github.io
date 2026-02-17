@@ -4,7 +4,7 @@
 <head>
  <meta charset="UTF-8">
  <meta name="viewport" content="width=device-width, initial-scale=1.0">
- <meta name="description" content="LiとYorkeは、1975年の Period three implies chaosという題の論文で、離散力学系において3周期点が存在するならば任意の自然数の周期点が存在するというすごい定理を示した。この記事ではその証明を解説する。">
+ <meta name="description" content="執筆中">
  <title>動的平均場理論入門1 - Asahi Nakamuta</title>
  <link rel="stylesheet" href="../css/reset.css">
  <link rel="stylesheet" href="../css/common.css">
@@ -25,6 +25,29 @@
         border-radius: 5px;        /* 角を少し丸くする */
       }
  </style>
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+       // .close-btn を持つ要素すべてに対して処理
+        document.querySelectorAll('.close-btn').forEach(btn => {
+          btn.addEventListener('click', function() {
+            // 1. 親のdetails要素を探す
+            const details = this.closest('details');
+            
+            // 2. その中のsummary要素（見出し）を探す
+            const summary = details.querySelector('summary');
+      
+            // 3. detailsを閉じる
+            details.removeAttribute('open');
+      
+            // 4. summaryの位置までスクロールして戻る
+            summary.scrollIntoView({
+              behavior: 'smooth', // ヌルっと動くアニメーション
+              block: 'center'     // 見出しを「画面の中央」に持ってくる
+            });
+          });
+        });
+    });
+    </script>
 </head>
 
 <body>
@@ -41,8 +64,7 @@
 
     <h3>概要</h3>
     <p class="summary">
-        動的平均場理論（DMFT）の入門シリーズ第一弾として、深層学習ダイナミクスの理論解析の例を紹介する。
-        具体的にはBordelon & Pehlevan (2022) の付録Dを踏襲して、なるべく行間を埋めながら説明する。
+        執筆中
     </p>
 
     <h3>論文へのリンク</h3>
@@ -139,6 +161,7 @@
             したがってNTKカーネルの時間発展をパラメータを用いずに巨視変数だけで表すことができれば、出力が閉じた形で表せる。<br>
             また別の見方をすると、データ $\alpha$ に対する出力の学習がNTKカーネル $K_{\mu\alpha}^{NTK} (t,t)$ を通して他のデータ $\mu$ の学習に影響を与えているともいえる。
         </p>
+        <p class="close-btn">（クリックして非表示）</p>
     </details>
     <details>
         <summary>$K_{\mu\alpha}^{NTK} (t,s) = \sum_{l=0}^L \Phi_{\mu\alpha}^{l} (t,s)G_{\mu\alpha}^{l+1} (t,s)$ と表せる（クリックして表示）</summary>
@@ -162,13 +185,13 @@
             NTKカーネルの定義を変形して題意の式を得よう。
             \begin{align}
                 K_{\mu\alpha}^{NTK} (t,s) &= \gamma^2 \nabla_{\boldsymbol{\theta}(t)} f_\mu(t) \cdot \nabla_{\boldsymbol{\theta}(s)} f_\alpha(s) \\
-                &= \gamma^2 \sum_{l=0}^L \sum_{i,j=1}^N \nabla_{\boldsymbol{W}_{ij}^l(t)} f_\mu(t) \cdot \nabla_{\boldsymbol{W}_{ij}^l(s)} f_\alpha(s) \\
+                &= \gamma^2 \sum_{l=0}^L \sum_{i,j=1}^N \nabla_{W_{ij}^l(t)} f_\mu(t) \cdot \nabla_{W_{ij}^l(s)} f_\alpha(s) \\
             \end{align}
         </p>
         <p>
             ここで
             \begin{align}
-                \nabla_{\boldsymbol{W}_{ij}^l(t)} f_\mu(t) &= \frac{\partial f_\mu(t)}{\partial \boldsymbol{h}_\mu^{l+1}(t)} \cdot \frac{\partial \boldsymbol{h}_\mu^{l+1}(t)}{\partial \boldsymbol{W}_{ij}^l(t)} \\
+                \nabla_{W_{ij}^l(t)} f_\mu(t) &= \frac{\partial f_\mu(t)}{\partial \boldsymbol{h}_\mu^{l+1}(t)} \cdot \frac{\partial \boldsymbol{h}_\mu^{l+1}(t)}{\partial W_{ij}^l(t)} \\
                 &= \left(\frac{\partial f_\mu(t)}{\partial \boldsymbol{h}_\mu^{l+1}(t)}\right)_i  \left(\frac{1}{\sqrt{N}} \phi(\boldsymbol{h}_\mu^l(t))\right)_j \\
                 &= \left(\frac{1}{\gamma\sqrt{N}}\boldsymbol{g}_\mu^{l+1}(t)\right)_i  \left(\frac{1}{\sqrt{N}} \phi(\boldsymbol{h}_\mu^l(t))\right)_j \\
             \end{align}
@@ -188,12 +211,13 @@
         <details>
             <summary>入力層 $l=0$ について（クリックして表示）</summary>
             <p>
-                $\nabla_{\boldsymbol{W}_{ij}^0(t)} f_\mu(t) = \left(\frac{\partial f_\mu(t)}{\partial \boldsymbol{h}_\mu^{1}(t)}\right)_i \cdot \left(\frac{1}{\sqrt{D}} \boldsymbol{x}_\mu\right)_j \\$なので、
+                $\nabla_{W_{ij}^0(t)} f_\mu(t) = \left(\frac{\partial f_\mu(t)}{\partial \boldsymbol{h}_\mu^{1}(t)}\right)_i \cdot \left(\frac{1}{\sqrt{D}} \boldsymbol{x}_\mu\right)_j \\$なので、
                 $$
                     \gamma^2 \nabla_{\boldsymbol{W}^0(t)} f_\mu(t) \cdot \nabla_{\boldsymbol{W}^0(s)} f_\alpha(s)  = G_{\mu\alpha}^{1} (t,s) \frac{1}{D} \boldsymbol{x}_\mu \cdot  \boldsymbol{x}_\alpha
                 $$
                 よって一貫性のために $\Phi_{\mu\alpha}^{0} (t,s) = \frac{1}{D} \boldsymbol{x}_\mu \cdot \boldsymbol{x}_\alpha = K_{\mu\alpha}^{x}$ (入力のグラム行列)とする。
             </p>
+            <p class="close-btn">（クリックして非表示）</p>
         </details>
         <details>
             <summary>最終層 $l=L$ について（クリックして表示）</summary>
@@ -204,6 +228,7 @@
                 $$
                 よって一貫性のために $G_{\mu\alpha}^{L+1} (t,s) = \boldsymbol{1}$ とする。
             </p>
+            <p class="close-btn">（クリックして非表示）</p>
         </details>
         <p>
             この結果を味わってみよう。
@@ -215,6 +240,7 @@
             しかし、特徴量カーネルと勾配カーネルは両方とも $O(N)$ で計算できるので、導出した関係式を使えばNTKカーネルの計算が $O(NL)$ でできる。
             ここからさらに $O(L)$ にするために動的平均場理論を使う。
         </p>
+        <p class="close-btn">（クリックして非表示）</p>
 
     </details>
     <p>
@@ -241,17 +267,18 @@
         <p>
             パラメータが満たす微分方程式を変形すると、
             \begin{align}
-                \frac{d\boldsymbol{W}_{ij}^{l}(t)}{dt} &= -\gamma^2\nabla_{\boldsymbol{W}_{ij}^{l}(t)} \mathcal{L}(f(t)) \\
-                &= \gamma^2\sum_\mu\Delta_\mu(t) \frac{\partial f_\mu}{\partial \boldsymbol{h}_\mu^{l+1}(t)} \cdot \frac{\partial \boldsymbol{h}_\mu^{l+1}(t)}{\partial \boldsymbol{W}_{ij}^{l}(t)} \\
+                \frac{dW_{ij}^{l}(t)}{dt} &= -\gamma^2\nabla_{W_{ij}^{l}(t)} \mathcal{L}(f(t)) \\
+                &= \gamma^2\sum_\mu\Delta_\mu(t) \frac{\partial f_\mu}{\partial \boldsymbol{h}_\mu^{l+1}(t)} \cdot \frac{\partial \boldsymbol{h}_\mu^{l+1}(t)}{\partial W_{ij}^{l}(t)} \\
                 &= \gamma^2\sum_\mu\Delta_\mu(t) \left(\frac{\boldsymbol{g}_\mu^{l+1}(t)}{\gamma\sqrt{N}}\right)_i \left(\frac{\phi(\boldsymbol{h}_\mu^l(t))}{\sqrt{N}}\right)_j \\
                 &= \frac{\gamma}{N}\sum_\mu\Delta_\mu(t) \left(\boldsymbol{g}_\mu^{l+1}(t)\right)_i \left(\phi(\boldsymbol{h}_\mu^l(t))\right)_j \\
-                \therefore \boldsymbol{W}^{l}(t) &= \boldsymbol{W}^{l}(0) + \frac{\gamma}{N}\int_0^t ds \sum_\mu\Delta_\mu(s) \boldsymbol{g}_\nu^{l+1}(s)\phi(\boldsymbol{h}_\mu^l(s))^\top \\
+                \therefore \boldsymbol{W}^{l}(t) &= \boldsymbol{W}^{l}(0) + \frac{\gamma}{N}\int_0^t ds \sum_\mu\Delta_\mu(s) \boldsymbol{g}_\mu^{l+1}(s)\phi(\boldsymbol{h}_\mu^l(s))^\top \\
             \end{align}
         </p>
         <p>
             これを $\boldsymbol{h}^{l+1}_\mu(t) = \frac{1}{\sqrt{N}}\boldsymbol{W}^{l}(t)\phi(\boldsymbol{h}^l_\mu(t))$ に代入して目的の式を得る。
             流れをまとめると、第 $l$ 層と第 $l+1$ 層の特徴量ベクトルの関係式にパラメータの時間発展を代入して、特徴量ベクトルの時間発展を求めている。
         </p>
+        <p class="close-btn">（クリックして非表示）</p>
     </details>
     <details>
         <summary>
@@ -273,7 +300,7 @@
                 \left(\boldsymbol{g}^{l}_\mu(t)\right)_i &= \gamma\sqrt{N}\left(\frac{\partial f_\mu}{\partial \boldsymbol{h}_\mu^{l}(t)}\right)_i \\
                 &= \gamma\sqrt{N}\frac{\partial f_\mu}{\partial \boldsymbol{h}_\mu^{l+1}(t)} \cdot \frac{\partial \boldsymbol{h}_\mu^{l+1}(t)}{\left(\partial \boldsymbol{h}_\mu^{l}(t)\right)_i} \\
                 &= \sum_j \left(\boldsymbol{g}_\mu^{l+1}(t)\right)_j \frac{\partial \left(\boldsymbol{h}_\mu^{l+1}(t)\right)_j}{\partial \left(\boldsymbol{h}_\mu^{l}(t)\right)_i} \\
-                &= \sum_j \left(\boldsymbol{g}_\mu^{l+1}(t)\right)_j \frac{1}{\sqrt{N}}\boldsymbol{W}^{l}_{ji}(t)\dot{\phi}(\boldsymbol{h}_\mu^{l}(t))_i \\
+                &= \sum_j \left(\boldsymbol{g}_\mu^{l+1}(t)\right)_j \frac{1}{\sqrt{N}}W^l_{ji}(t)\dot{\phi}(\boldsymbol{h}_\mu^{l}(t))_i \\
                 &= \frac{1}{\sqrt{N}}\dot{\phi}(\boldsymbol{h}_\mu^{l}(t))_i\left(\boldsymbol{W}^{l\top}(t)\boldsymbol{g}_\mu^{l+1}(t)\right)_i \\
                 \therefore \boldsymbol{g}^{l}_\mu(t) &= \dot{\phi}(\boldsymbol{h}_\mu^{l}(t)) \odot \boldsymbol{z}^{l}_\mu(t)
             \end{align}
@@ -281,6 +308,7 @@
             これは誤差逆伝播の計算と全く同じ。
             こうして求めた漸化式に前項で求めた $\boldsymbol{W}^l(t)$ を代入して目的の式を得る。
         </p>
+        <p class="close-btn">（クリックして非表示）</p>
     </details>
 
     <figure class="article__image-container">
@@ -298,40 +326,255 @@
     <h3>動的平均場理論</h3>
     <p>
         前置きが長くなったが、ここからが本題。
-        この記事の目標は幅無限大の極限で出力の学習ダイナミクスを理論解析することだ。
+        この記事の目標は幅無限大の極限で出力の学習ダイナミクスを理論解析することだった。
         素朴に考えるとパラメータの時間発展が主役になってしまうが、ここまでの計算によってパラメータの初期値とベクトルの時間発展で記述できるようになった。
-        残る問題は①パラメータの初期化にランダムネスがあることと、②ベクトルの長さが無限大になってしまうことだ。
-        動的平均場理論を用いて、①ガウス積分で期待値を取る方法と②鞍点法によってベクトルではなくスカラーで記述する方法でそれぞれ解決する。
+        残る問題は①パラメータの初期化にランダムネスがあることと、②ベクトルの長さが無限大になってしまうこと。
+        動的平均場理論を用いて、①ガウス積分で期待値を取る方法と②鞍点法によってベクトルではなくスカラーで記述する方法とでそれぞれ解決する。
     </p>
     <p>
-        動的平均場理論(Dynamical Mean Field Theory, DMFT)とは、①クエンチした確率変数が②大量に集まった系での、③巨視変数の④ダイナミクスを求める方法である。
+        動的平均場理論(Dynamical Mean Field Theory, DMFT)とは、1.クエンチした確率変数が 2.大量に集まった系での、 3.巨視変数の 4.ダイナミクスを求める方法である。
     </p>
     <ol>
         <li>
             確率変数がクエンチしているとは、注目する時間発展の間に変化しないという意味である。
-            例えばリカレントネットワークの結合をランダムに定めて、その結合のもとでニューロンの状態を時間発展させる系や、フィードフォワードネットワークの初期重みをランダムに定めて出力を学習する系が考えられる。
-            後者の場合は重みが時間発展するが、確率性があるのは重みの初期化のみで、それが決まれば残りは決定論的に発展するという点が重要である。
-            この記事ではフィードフォワードネットワークの例を考える。
+            例えばリカレントネットワークの結合をランダムに定めて、その結合のもとでニューロンの状態を時間発展させる系や、フィードフォワードネットワークの初期重みをランダムに定めて出力を学習する系(今の系はこれ)が考えられる。
+            後者の場合は重みが時間発展するが、確率性があるのは重みの初期化だけで、それが決まれば残りは決定論的に発展するという点がポイントだと思う。
         </li>
         <li>
-            そのような変数が大量に集まる時、
+            クエンチした独立な確率変数が大量に集まる時、自己平均性が期待できる。
+            この辺あやふやなので後で書き換えるかも。
         </li>
         <li>
-            巨視的な変数は、Ising系なら磁化、リカレントネットワークなら平均活動度、フィードフォワードネットワークなら後で登場する特徴量カーネル $\Phi_{\mu\alpha}$ と勾配カーネル $G_{\mu\alpha}$ などである。
+            巨視的な変数は、Ising系なら磁化、リカレントネットワークなら平均活動度、フィードフォワードネットワークなら上で定義した特徴量カーネル $\Phi_{\mu\alpha}$ と勾配カーネル $G_{\mu\alpha}$ などのように、微視的な変数を平均して求める変数のこと。
             オーダーパラメータともいう。
         </li>
         <li>
-            ダイナミクスを求めることから動的という名前がついている（と僕は思っている）。
+            例えばIsingモデルの平均場近似とは違って、ダイナミクスを記述することから動的という名前がついている（と僕は思っている）。
             したがって求めるべき対象は、巨視変数のダイナミクスを閉じた形で定める時間発展方程式や、相関関数のセルフコンシステント方程式である。
         </li>
     </ol>
 
-    <h3>モーメント生成関数</h3>
-
-
     <h3>ウォームアップ：L=1の場合</h3>
+    <p>
+        この節では中間層が1層の場合を考える(図2)。
+        出力のダイナミクスを記述するにあたって必要なのは $\Phi_{\mu\alpha}^0, \Phi_{\mu\alpha}^1, G_{\mu\alpha}^1, G_{\mu\alpha}^2$ だ。
+        このうち端の二つは定義から $\Phi_{\mu\alpha}^0 = K_{\mu\alpha}^x, G_{\mu\alpha}^2 = \boldsymbol{1}$ となるので、中の二つが問題となる。
+    </p>
+    <p>
+        定義から $\Phi_{\mu\alpha}^1 = \frac{1}{N} \boldsymbol{h}_\mu \cdot \boldsymbol{h}_\alpha, 
+        G_{\mu\alpha}^1 = \frac{1}{N} \boldsymbol{g}_\mu \cdot \boldsymbol{g}_\alpha$ なので、
+        $\boldsymbol{h}_\mu(t), \boldsymbol{g}_\mu(t)$ を計算すれば良い(ここで層の添字 $l$ は省略している)。
+        上でやった計算を境界条件に気をつけて再現すれば、
+        \begin{align}
+            \boldsymbol{h}_\mu(t) &= \frac{1}{\sqrt{N}} \boldsymbol{W}^{0}(t)\boldsymbol{x}_\mu \\
+            &= \frac{1}{\sqrt{N}}\left(\boldsymbol{W}^{0}(0) + \frac{\gamma}{\sqrt{N}}\int_0^t ds \sum_\nu\Delta_\nu(s) \boldsymbol{g}_\nu(s)\boldsymbol{x}_\nu^\top\right)\boldsymbol{x}_\mu \\
+            &= \boldsymbol{\chi}_\mu + \frac{\gamma}{\sqrt{N}}\int_0^t ds \sum_\nu\Delta_\nu(s) \boldsymbol{g}_\nu(s)K_{\mu\nu}^x \\
+            \boldsymbol{g}_\mu(t) &= \boldsymbol{z}(t) \odot \phi(\boldsymbol{h}_\mu(t)) \\
+            \boldsymbol{z}(t) &= \boldsymbol{w}^{1}(t)\\
+            &= \boldsymbol{\xi} + \frac{\gamma}{\sqrt{N}}\int_0^t ds \sum_\nu\Delta_\nu(s) \phi(\boldsymbol{h}_\nu(s))\\
+        \end{align}
+        となる。
+        ただし第一項をそれぞれ $\boldsymbol{\chi}_\mu := \frac{1}{\sqrt{N}}\boldsymbol{W}^{0}(0)\boldsymbol{x}_\mu, \boldsymbol{\xi} := \boldsymbol{w}^{1}(0)$ とおいた。
+        どちらも $t$ に依存しない定数であることに注意しよう。
+        ネタバレしておくと一般の $L$ ではこれが時間変化するようになって大変になる。
+    </p>
+    <p>
+        パラメータ初期化のランダムネスは $\boldsymbol{\chi}_\mu$ と $\boldsymbol{\xi}$ にのみ現れていて、それがベクトル $\boldsymbol{h}_\mu(t), \boldsymbol{g}_\mu(t)$ に影響し、カーネル $\Phi_{\mu\alpha}^1, G_{\mu\alpha}^1$ に影響している。
+        このランダムネスをまともに扱うと $O(N)$ になってしまうが、知りたいのはカーネル $\Phi_{\mu\alpha}^1, G_{\mu\alpha}^1$ であることを念頭に置いて、これを回避する。
+        抽象的には、パラメータ初期値という微視変数からカーネルという巨視変数に変数変換をすることで測度の集中が起きるということ。
+        具体的には、 $\boldsymbol{W}^0(0), \boldsymbol{w}^1(0)$ のモーメント生成関数を変形して鞍点法を用いることで、カーネル $\Phi_{\mu\alpha}^1, G_{\mu\alpha}^1$ のモーメント生成関数を入手するということ。
+    </p>
 
-    <h3>本題：L>1の場合</h3>
+    <details>
+        <summary>モーメント生成関数 $Z(j)$ の導入（クリックして表示）</summary>
+        <p>
+            以降の計算で主役になるのはモーメント生成関数 (モーメント母関数)だ。
+            一般に、確率変数 $x$ のモーメント生成関数 $Z_x(j)$ は次のように定義される。
+            \begin{align}
+                Z_x(j) &= \langle \exp(jx) \rangle \\
+                &= \int P(x) \exp(jx) dx
+            \end{align}
+            ただし $P(x)$ は $x$ の確率分布である。
+            なぜモーメント生成関数と呼ぶかというと $j$ で $k$ 回微分したときに $x$ の $k$ 次モーメントが現れるからだが、その性質は今回の記事では使わない。
+            重要なのは、$Z_x(j)$ が $P(x)$ の完全な情報を持っているという点だ。
+            以降の計算では $W(0)$ の確率性に注目してモーメント生成関数を定義した後に、それを変形し、新しく現れたモーメント生成関数を見て平均場の確率分布が得られたとみなす。
+        </p>
+        <details>
+            <summary>モーメント生成関数と分配関数の関係（クリックして表示）</summary>
+            <p>
+                モーメント生成関数を $Z$ で表すのはある意味で分配関数と同一視できるからだ。
+                それを説明する。
+                統計力学では分配関数 $Z$ は次のように定義される。
+                \begin{align}
+                    Z(\beta) &= \int \exp(-\beta E(x)) dx \\
+                    &= \int \rho(E)\exp(-\beta E) dE
+                \end{align}
+                ただし $\beta$ は逆温度であり、$\rho(E)$ はエネルギー $E$ の状態密度である。
+            </p>
+            <p>
+                モーメント生成関数の定義と見比べると、
+                \begin{align}
+                    x &\leftrightarrow E \\
+                    P(x) &\leftrightarrow \rho(E) \\
+                    j &\leftrightarrow -\beta \\
+                \end{align}
+                という対応があることがわかる。
+                ただしモーメント生成関数の方は高次元の $x$ と$j$ を考えうるのに対して、分配関数はそうではないと思うので、完璧な対応とはいえないかもしれない。
+            </p>
+            <p class="close-btn">（クリックして非表示）</p>
+        </details>
+        <p class="close-btn">（クリックして非表示）</p>
+    </details>
+
+    <p>
+        $\boldsymbol{W}^0(0), \boldsymbol{w}^1(0)$ に関するモーメント生成関数を定義する。
+        $$
+            Z[\{\boldsymbol{j}_\mu\}_{\mu \in [P]}, \boldsymbol{v}] := \left\langle \exp\left(\sum_\mu \boldsymbol{j}_\mu \cdot \boldsymbol{\chi}_\mu + \boldsymbol{v}\cdot\boldsymbol{\xi}\right)\right\rangle_{\boldsymbol{W}^0(0), \boldsymbol{w}^1(0)}
+        $$
+    </p>
+    <details>
+        <summary>
+            恒等式を挟んで変形すると次のようになる。（クリックして表示）
+        </summary>
+        <p>
+            いま $\boldsymbol{\chi}_\mu = \frac{1}{\sqrt{D}}\boldsymbol{W}^0(0)\boldsymbol{x}_\mu$ という関係式がある。
+            これを上の式に代入するのではなく、$\delta$関数として表現し、さらにそれをフーリエ変換した恒等式を用いる。
+            すなわち
+            \begin{align}
+                1 &= \int d\boldsymbol{\chi}_\mu \delta\left(\boldsymbol{\chi}_\mu - \frac{1}{\sqrt{D}}\boldsymbol{W}^0(0)\boldsymbol{x}_\mu\right)\\
+                &= \int \frac{d \boldsymbol{\chi}_\mu d \boldsymbol{\hat\chi}_\mu}{(2\pi)^N}\exp\left(i\boldsymbol{\hat\chi}_\mu\left(\boldsymbol{\chi}_\mu - \frac{1}{\sqrt{D}}\boldsymbol{W}^0(0)\boldsymbol{x}_\mu\right)\right)
+            \end{align}
+            を全ての $\mu$ について両辺に掛ける。
+        </p>
+        <p>
+            $\xi$ についても同様に、
+            $$
+            1=\int \frac{d \boldsymbol{\xi} d \boldsymbol{\hat\xi}}{(2\pi)^N} \exp\left(i\boldsymbol{\hat\xi} \left(\boldsymbol{\xi} - \boldsymbol{w}^1(0)\right)\right)
+            $$
+            を両辺に掛ける。
+        </p>
+        <p>
+            こうすることで、元は $\boldsymbol{W}^0(0), \boldsymbol{w}^1(0)$ の関数だった $\boldsymbol{\chi}_\mu, \boldsymbol{\xi}$ が独立な確率変数として扱えるようになり、
+            $\boldsymbol{W}^0(0), \boldsymbol{w}^1(0)$ の寄与は陽に現れるようになった。
+            その結果パラメータ初期値に関する期待値が取りやすくなった（本当はL=1の場合は元から取りやすかったが、一般のLでは真に取りやすくなる）。
+            著者によるとこういう形式をMSRDJ formalismというらしい。
+            MSRDJ経路積分という経路積分表示で似たような変形をするからだと思う。
+        </p>
+        <p class="close-btn">(クリックして非表示)</p>
+    </details>
+    <p>
+        \begin{align}
+            Z[\{\boldsymbol{j}_\mu\}_{\mu \in [P]}, \boldsymbol{v}]
+            = \int \left(\prod_\mu \frac{d \boldsymbol{\chi}_\mu d \boldsymbol{\hat\chi}_\mu}{(2\pi)^N}\right)
+            \frac{d \boldsymbol{\xi} d \boldsymbol{\hat\xi}}{(2\pi)^N}
+            \left\langle\exp\left(
+                \sum_\mu i\boldsymbol{\hat\chi}_\mu \left(\boldsymbol{\chi}_\mu - \frac{1}{\sqrt{D}}\boldsymbol{W}^0(0)\boldsymbol{x}_\mu\right) \right. \right.&\\
+                \left.\left. + i\boldsymbol{\hat\xi} \left(\boldsymbol{\xi} - \boldsymbol{w}^1(0)\right)
+                + \sum_\mu \boldsymbol{j}_\mu \cdot \boldsymbol{\chi}_\mu + \boldsymbol{v}\cdot\boldsymbol{\xi}
+            \right)\right\rangle_{\boldsymbol{W}^0(0), \boldsymbol{w}^1(0)}&
+        \end{align}
+    </p>
+
+    <details>
+        <summary>
+            $\boldsymbol{W}^0(0), \boldsymbol{w}^1(0)$ についてガウス積分すると $\boldsymbol{\chi}_\mu, \boldsymbol{\xi}$ のモーメント生成関数が得られる。（クリックして表示）
+        </summary>
+        <p>
+            $x\sim \mathcal{N}(0, \sigma^2)$ のガウス変数について、次の公式が成り立つ。
+            \begin{align}
+                \langle \exp(jx) \rangle_x &= \int dx \exp\left(-\frac{x^2}{2\sigma^2} + jx\right)\\
+                &= \int dx \exp\left(-\frac{1}{2\sigma^2}(x - j\sigma^2)^2 + \frac{j^2\sigma^2}{2}\right)\\
+                &= \exp\left(\frac{j^2\sigma^2}{2}\right)
+            \end{align}
+            これを念頭に置いて高次元の場合も積分しよう。
+        </p>
+        <p>
+            \begin{align}
+                \left\langle \exp\left(-\sum_\mu \frac{i\boldsymbol{\hat\chi}_\mu \boldsymbol{W}^0(0) \boldsymbol{x}_\mu}{\sqrt{D}}\right) \right\rangle_{\boldsymbol{W}^0(0)}
+                &= \prod_{ij}\left\langle\exp\left(-\sum_\mu\frac{i(\hat\chi_\mu)_i W^0_{ij}(0) (x_\mu)_j}{\sqrt{D}}\right)\right\rangle_{W^0_{ij}(0)} \\
+                &= \prod_{ij}\exp\left(-\frac{1}{2D}\sum_{\mu\alpha} (\hat\chi_\mu)_i(\hat\chi_\alpha)_i(x_\mu)_j(x_\alpha)_j\right) \\
+                &= \exp\left(-\frac{1}{2D}\sum_{\mu\alpha} \boldsymbol{\hat\chi}_\mu \cdot \boldsymbol{\hat\chi}_\alpha \boldsymbol{x}_\mu \cdot \boldsymbol{x}_\alpha\right) \\
+                &= \exp\left(-\frac{1}{2}\sum_{\mu\alpha} \boldsymbol{\hat\chi}_\mu \cdot \boldsymbol{\hat\chi}_\alpha K^x_{\mu\alpha}\right) \\
+
+                \left\langle \exp\left(-i\boldsymbol{\hat\xi} \boldsymbol{w}^1(0)\right) \right\rangle_{\boldsymbol{w}^1(0)}
+                &= \prod_{i}\left\langle\exp\left(-i\hat\xi_i w^1_i(0)\right)\right\rangle_{w^1_i(0)} \\
+                &= \prod_{i}\exp\left(-\frac{1}{2}\hat\xi_i^2\right) \\
+                &= \exp\left(-\frac{1}{2}|\boldsymbol{\hat\xi}|^2\right) 
+            \end{align}
+            上の二式を代入すれば $\boldsymbol{W}^0(0), \boldsymbol{w}^1(0)$ のガウス積分が完了する。
+            こうしてパラメータの初期値を変数変換してベクトル $\boldsymbol{\chi}_\mu, \boldsymbol{\xi}$ の確率性に注目したモーメント生成関数が手に入った。
+        </p>
+        <p class="close-btn">(クリックして非表示)</p>
+    </details>
+    <p>
+        \begin{align}
+            Z[\{\boldsymbol{j}_\mu\}_{\mu \in [P]}, \boldsymbol{v}]
+            = \int \left(\prod_\mu \frac{d \boldsymbol{\chi}_\mu d \boldsymbol{\hat\chi}_\mu}{(2\pi)^N}\right) \frac{d \boldsymbol{\xi} d \boldsymbol{\hat\xi}}{(2\pi)^N}
+            \exp\left(
+                \sum_\mu i\boldsymbol{\hat\chi}_\mu \cdot \boldsymbol{\chi}_\mu
+                - \frac{1}{2}\sum_{\mu\alpha} \boldsymbol{\hat\chi}_\mu \cdot \boldsymbol{\hat\chi}_\alpha K_{\mu\alpha}^x \right. &\\
+                \left. + i\boldsymbol{\hat\xi} \cdot \boldsymbol{\xi}
+                - \frac{1}{2}|\boldsymbol{\hat\xi}|^2
+                + \sum_\mu \boldsymbol{j}_\mu \cdot \boldsymbol{\chi}_\mu
+                + \boldsymbol{v}\cdot\boldsymbol{\xi}
+            \right) &
+        \end{align}
+    </p>
+    <p>
+        モーメント生成関数をよく見ると、独立なN個の1体問題の積に分解できることがわかる。
+        すなわち、
+        \begin{align}
+            Z[\{\boldsymbol{j}_\mu\}_{\mu \in [P]}, \boldsymbol{v}]
+            = \prod_{i} Z_1(\{j^\mu_i\}_{\mu \in [P]}, v_i)
+        \end{align}
+        ただし
+        \begin{align}
+            Z_1(\{j^\mu_i\}_{\mu \in [P]}, v_i)
+            = \int \frac{d \boldsymbol{\chi}_i d \boldsymbol{\hat\chi}_i}{(2\pi)^N}
+            \frac{d \boldsymbol{\xi}_i d \boldsymbol{\hat\xi}_i}{(2\pi)^N}
+            \exp\left(
+                \sum_\mu i\boldsymbol{\hat\chi}_i \cdot \boldsymbol{\chi}_i
+            \right)
+        \end{align}
+    </p>
+    <details>
+        <summary>
+            巨視変数であるカーネルに変数変換すると次のようになる。（クリックして表示）
+        </summary>
+        <p>
+            $\boldsymbol{\chi}_\mu, \boldsymbol{\xi}$ に変数変換した時と同様に、$\delta$ 関数を使ってカーネルの定義式となる恒等式を導入する。
+            \begin{align}
+                1 &= N \int d\Phi_{\mu\alpha}(t,s) \delta\left(N \Phi_{\mu\alpha}(t,s) - \phi(\boldsymbol{h}_\mu(t)) \cdot \phi(\boldsymbol{h}_\alpha(s))\right) \\
+                &= N \int \frac{d\Phi_{\mu\alpha}(t,s)d\hat\Phi_{\mu\alpha}(t,s)}{2\pi i} \exp\left(\hat\Phi_{\mu\alpha}(t,s)\left(N\Phi_{\mu\alpha}(t,s) - \phi(\boldsymbol{h}_\mu(t)) \cdot \phi(\boldsymbol{h}_\alpha(s))\right)\right) \\
+                1 &= N \int dG_{\mu\alpha}(t,s) \delta\left(N G_{\mu\alpha}(t,s) - \boldsymbol{g}_\mu(t)\cdot\boldsymbol{g}_\alpha(s)\right) \\
+                &= N \int \frac{dG_{\mu\alpha}(t,s)d\hat{G}_{\mu\alpha}(t,s)}{2\pi i} \exp\left(\hat{G}_{\mu\alpha}(t,s)\left(N G_{\mu\alpha}(t,s) - \boldsymbol{g}_\mu(t)\cdot\boldsymbol{g}_\alpha(s)\right)\right) 
+            \end{align}
+            を全ての $\mu, \alpha, t,s$ について両辺に掛ける。
+        </p>
+        <p class="close-btn">(クリックして非表示)</p>
+    </details>
+    <p>
+        $$
+            Z[\{\boldsymbol{j}_\mu\}_{\mu \in [P]}, \boldsymbol{v}]
+        $$
+    </p>
+    <details>
+        <summary>
+            作用について鞍点方程式を求める。（クリックして表示）
+        </summary>
+        <p>
+            hoge
+        </p>
+        <p class="close-btn">(クリックして非表示)</p>
+    </details>
+    <p>
+        $$
+            Z[\{\boldsymbol{j}_\mu\}_{\mu \in [P]}, \boldsymbol{v}]
+        $$
+    </p>
+
+
+    <h3>本題：一般のLの場合</h3>
 
     <details>
         <summary>証明（クリックして表示）</summary>
@@ -382,6 +625,12 @@
             <td>式(22)</td>
             <td>$\boldsymbol{\chi}_\mu^l(t)$</td>
             <td>$\boldsymbol{\chi}_\nu^{l+1}(t)$</td>
+        </tr>
+        <tr>
+            <td>23</td>
+            <td>式(25)の1行目</td>
+            <td>$\frac{1}{\sqrt{N}}$</td>
+            <td>$\frac{1}{\sqrt{D}}$</td>
         </tr>
         <tr>
             <td>23</td>
