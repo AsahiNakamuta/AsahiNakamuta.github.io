@@ -521,21 +521,26 @@
         \end{align}
     </p>
     <p>
-        モーメント生成関数をよく見ると、独立なN個の1体問題の積に分解できることがわかる。
+        このモーメント生成関数をよく見ると、独立な $N$ 個の1体問題の積に分解できることがわかる。
         すなわち、
         \begin{align}
             Z[\{\boldsymbol{j}_\mu\}_{\mu \in [P]}, \boldsymbol{v}]
-            = \prod_{i} Z_1(\{j^\mu_i\}_{\mu \in [P]}, v_i)
+            = \prod_{i=1}^N Z_1[\{j^\mu_i\}_{\mu \in [P]}, v_i]
         \end{align}
         ただし
         \begin{align}
-            Z_1(\{j^\mu_i\}_{\mu \in [P]}, v_i)
-            = \int \frac{d \boldsymbol{\chi}_i d \boldsymbol{\hat\chi}_i}{(2\pi)^N}
-            \frac{d \boldsymbol{\xi}_i d \boldsymbol{\hat\xi}_i}{(2\pi)^N}
+            Z_1[\{j^\mu\}_{\mu \in [P]}, v]
+            = \int \left(\prod_\mu \frac{d\chi_\mu d \hat\chi_\mu}{2\pi}\right)\frac{d\xi d\hat\xi}{2\pi}
             \exp\left(
-                \sum_\mu i\boldsymbol{\hat\chi}_i \cdot \boldsymbol{\chi}_i
-            \right)
+                \sum_\mu i\hat\chi_\mu\chi_\mu
+                - \frac{1}{2}\sum_{\mu\alpha} \hat\chi_\mu \hat\chi_\alpha K_{\mu\alpha}^x \right. &\\
+                \left. + i\hat\xi \xi
+                - \frac{1}{2}\hat\xi^2
+                + \sum_\mu j^\mu \chi_\mu
+                + v \xi
+            \right) &
         \end{align}
+        であり、$\chi_\mu, \xi, j^\mu, v$ はいずれもスカラーである。
     </p>
     <details>
         <summary>
@@ -545,18 +550,27 @@
             $\boldsymbol{\chi}_\mu, \boldsymbol{\xi}$ に変数変換した時と同様に、$\delta$ 関数を使ってカーネルの定義式となる恒等式を導入する。
             \begin{align}
                 1 &= N \int d\Phi_{\mu\alpha}(t,s) \delta\left(N \Phi_{\mu\alpha}(t,s) - \phi(\boldsymbol{h}_\mu(t)) \cdot \phi(\boldsymbol{h}_\alpha(s))\right) \\
-                &= N \int \frac{d\Phi_{\mu\alpha}(t,s)d\hat\Phi_{\mu\alpha}(t,s)}{2\pi i} \exp\left(\hat\Phi_{\mu\alpha}(t,s)\left(N\Phi_{\mu\alpha}(t,s) - \phi(\boldsymbol{h}_\mu(t)) \cdot \phi(\boldsymbol{h}_\alpha(s))\right)\right) \\
+                &= Ndtds \int \frac{d\Phi_{\mu\alpha}(t,s)d\hat\Phi_{\mu\alpha}(t,s)}{2\pi i} \exp\left(dtds\hat\Phi_{\mu\alpha}(t,s)\left(N\Phi_{\mu\alpha}(t,s) - \phi(\boldsymbol{h}_\mu(t)) \cdot \phi(\boldsymbol{h}_\alpha(s))\right)\right) \\
                 1 &= N \int dG_{\mu\alpha}(t,s) \delta\left(N G_{\mu\alpha}(t,s) - \boldsymbol{g}_\mu(t)\cdot\boldsymbol{g}_\alpha(s)\right) \\
-                &= N \int \frac{dG_{\mu\alpha}(t,s)d\hat{G}_{\mu\alpha}(t,s)}{2\pi i} \exp\left(\hat{G}_{\mu\alpha}(t,s)\left(N G_{\mu\alpha}(t,s) - \boldsymbol{g}_\mu(t)\cdot\boldsymbol{g}_\alpha(s)\right)\right) 
+                &= Ndtds \int \frac{dG_{\mu\alpha}(t,s)d\hat{G}_{\mu\alpha}(t,s)}{2\pi i} \exp\left(dtds\hat{G}_{\mu\alpha}(t,s)\left(N G_{\mu\alpha}(t,s) - \boldsymbol{g}_\mu(t)\cdot\boldsymbol{g}_\alpha(s)\right)\right) 
             \end{align}
             を全ての $\mu, \alpha, t,s$ について両辺に掛ける。
         </p>
         <p class="close-btn">(クリックして非表示)</p>
     </details>
     <p>
-        $$
+        \begin{align}
             Z[\{\boldsymbol{j}_\mu\}_{\mu \in [P]}, \boldsymbol{v}]
-        $$
+            &\propto \int \prod_{\mu, \alpha, t, s} d\Phi d\hat\Phi dG d\hat{G} \exp\left(NS[\Phi, \hat\Phi, G, \hat{G}]\right) \\
+            S[\Phi, \hat\Phi, G, \hat{G}]
+            &= \sum_{\mu, \alpha}\int dtds \left(
+                \hat\Phi \Phi + \hat{G} G
+                - \frac{1}{N}\hat\Phi \phi(\boldsymbol{h}_\mu(t)) \cdot \phi(\boldsymbol{h}_\alpha(s))
+                - \frac{1}{N}\hat{G} \boldsymbol{g}_\mu(t) \cdot \boldsymbol{g}_\alpha(s)
+            \right)
+            + \frac{1}{N} \ln (上の式) \\
+        \end{align}
+        ただし例えば $\Phi = \Phi_{\mu\alpha}(t,s)$ と省略している。
     </p>
     <details>
         <summary>
