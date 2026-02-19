@@ -76,11 +76,11 @@
     <p>
         次のような深層ニューラルネットワークを考えよう。
         \begin{align}
-            f_\mu &= \frac{1}{\gamma\sqrt{N}} \boldsymbol{w}_L \cdot \phi(\boldsymbol{h}_\mu^L) \\
+            f_\mu &= \frac{1}{\gamma\sqrt{N}} \boldsymbol{w}^L \cdot \phi(\boldsymbol{h}_\mu^L) \\
             \boldsymbol{h}_\mu^{l+1} &= \frac{1}{\sqrt{N}} \boldsymbol{W}^l \phi(\boldsymbol{h}_\mu^l) \\
             \boldsymbol{h}_\mu^1 &= \frac{1}{\sqrt{D}} \boldsymbol{W}^0 \boldsymbol{x}_\mu
         \end{align}
-        ここで $\{\boldsymbol{x}_\mu\}$ は $D$ 次元の入力データ、$\boldsymbol{h}^l_\mu$ はそれに対する第 $l$ 層のニューロンの $N$ 次元pre-activationベクトル、$f_\mu$ は最終層のスカラー出力、
+        ここで $\{\boldsymbol{x}_\mu\}_{\mu\in[P]}$ は $D$ 次元の入力データ、$\boldsymbol{h}^l_\mu$ は各データに対する第 $l$ 層のニューロンの $N$ 次元pre-activationベクトル、$f_\mu$ は最終層のスカラー出力、
         $\boldsymbol{W}^l$ は第 $l$ 層の重み行列、$\phi$ は活性化関数、$\gamma$ は学習のレジームを調整するハイパーパラメータである。
     </p>
     <p>
@@ -126,7 +126,7 @@
         これを実現するために、まず出力のダイナミクスをカーネルで表示する。
         この部分は割と簡単なので直後に説明する。
         難しいのはそのカーネルの時間発展をパラメータを用いずに表す部分だ。
-        動的平均場理論の核心はここにあるので、計算の前にその気持ちと使う道具を紹介する。
+        動的平均場理論の核心はここにあるので、計算の前にその気持ちを紹介する。
         具体的な計算は非常に複雑なため、中間層が1層の場合でウォームアップしてから、一般の深層ネットワークの場合を説明する。
     </p> 
 
@@ -158,7 +158,9 @@
             この結果を味わってみよう。
             $\Delta_\alpha(t)$ は出力 $f_\alpha(t)$ と教師データ $y_\alpha$ を使って簡単に書き下せるので、$f(t)$ の時間発展を考えるにあたっては何も問題ない。
             逆にNTKカーネル $K_{\mu\alpha}^{NTK} (t,t)$ の方はパラメータに依存してしまっている。
-            したがってNTKカーネルの時間発展をパラメータを用いずに巨視変数だけで表すことができれば、出力が閉じた形で表せる。<br>
+            したがってNTKカーネルの時間発展をパラメータを用いずに巨視変数だけで表すことができれば、出力が閉じた形で表せる。
+        </p>
+        <p>
             また別の見方をすると、データ $\alpha$ に対する出力の学習がNTKカーネル $K_{\mu\alpha}^{NTK} (t,t)$ を通して他のデータ $\mu$ の学習に影響を与えているともいえる。
         </p>
         <p class="close-btn">（クリックして非表示）</p>
@@ -168,12 +170,12 @@
         <p>
             特徴量カーネル $\Phi_{\mu\alpha}^{l} (t,s)$ と勾配カーネル $G_{\mu\alpha}^{l} (t,s)$ をそれぞれ次のように定義する。
             \begin{align}
-                \Phi_{\mu\alpha}^{l} (t,s) &= \frac{1}{N} \phi(\boldsymbol{h}_\mu^l(t)) \cdot \phi(\boldsymbol{h}_\alpha^l(s)) \\
-                G_{\mu\alpha}^{l} (t,s) &= \frac{1}{N} \boldsymbol{g}_\mu^l(t) \cdot \boldsymbol{g}_\alpha^l(s)
+                \Phi_{\mu\alpha}^{l} (t,s) &:= \frac{1}{N} \phi(\boldsymbol{h}_\mu^l(t)) \cdot \phi(\boldsymbol{h}_\alpha^l(s)) \\
+                G_{\mu\alpha}^{l} (t,s) &:= \frac{1}{N} \boldsymbol{g}_\mu^l(t) \cdot \boldsymbol{g}_\alpha^l(s)
             \end{align}
             ただし勾配ベクトル $\boldsymbol{g}_\mu^l(t)$ の定義は次の通り。
             $$
-                \boldsymbol{g}_\mu^l(t) = \gamma\sqrt{N} \frac{\partial f_\mu(t)}{\partial \boldsymbol{h}^l_\mu(t)}
+                \boldsymbol{g}_\mu^l(t) := \gamma\sqrt{N} \frac{\partial f_\mu(t)}{\partial \boldsymbol{h}^l_\mu(t)}
             $$
         </p>
         <p>
@@ -329,7 +331,7 @@
         この記事の目標は幅無限大の極限で出力の学習ダイナミクスを理論解析することだった。
         素朴に考えるとパラメータの時間発展が主役になってしまうが、ここまでの計算によってパラメータの初期値とベクトルの時間発展で記述できるようになった。
         残る問題は①パラメータの初期化にランダムネスがあることと、②ベクトルの長さが無限大になってしまうこと。
-        動的平均場理論を用いて、①ガウス積分で期待値を取る方法と②鞍点法によってベクトルではなくスカラーで記述する方法とでそれぞれ解決する。
+        動的平均場理論を用いて、①ガウス積分で期待値を取る方法と②モーメント生成関数を変形してベクトルではなくスカラーで記述する方法とでそれぞれ解決する。
     </p>
     <p>
         動的平均場理論(Dynamical Mean Field Theory, DMFT)とは、1.クエンチした確率変数が 2.大量に集まった系での、 3.巨視変数の 4.ダイナミクスを求める方法である。
@@ -355,34 +357,38 @@
     </ol>
 
     <h3>ウォームアップ：L=1の場合</h3>
+    <figure class="article__image-container">
+        <img src="../images/dmft1/onelayer.jpeg">
+        <figcaption>図2: L=1の場合</figcaption>
+    </figure>
     <p>
         この節では中間層が1層の場合を考える(図2)。
         出力のダイナミクスを記述するにあたって必要なのは $\Phi_{\mu\alpha}^0, \Phi_{\mu\alpha}^1, G_{\mu\alpha}^1, G_{\mu\alpha}^2$ だ。
         このうち端の二つは定義から $\Phi_{\mu\alpha}^0 = K_{\mu\alpha}^x, G_{\mu\alpha}^2 = \boldsymbol{1}$ となるので、中の二つが問題となる。
     </p>
     <p>
-        定義から $\Phi_{\mu\alpha}^1 = \frac{1}{N} \boldsymbol{h}_\mu \cdot \boldsymbol{h}_\alpha, 
+        定義から $\Phi_{\mu\alpha}^1 = \frac{1}{N} \phi(\boldsymbol{h}_\mu) \cdot \phi(\boldsymbol{h}_\alpha), 
         G_{\mu\alpha}^1 = \frac{1}{N} \boldsymbol{g}_\mu \cdot \boldsymbol{g}_\alpha$ なので、
         $\boldsymbol{h}_\mu(t), \boldsymbol{g}_\mu(t)$ を計算すれば良い(ここで層の添字 $l$ は省略している)。
         上でやった計算を境界条件に気をつけて再現すれば、
         \begin{align}
-            \boldsymbol{h}_\mu(t) &= \frac{1}{\sqrt{N}} \boldsymbol{W}^{0}(t)\boldsymbol{x}_\mu \\
-            &= \frac{1}{\sqrt{N}}\left(\boldsymbol{W}^{0}(0) + \frac{\gamma}{\sqrt{N}}\int_0^t ds \sum_\nu\Delta_\nu(s) \boldsymbol{g}_\nu(s)\boldsymbol{x}_\nu^\top\right)\boldsymbol{x}_\mu \\
+            \boldsymbol{h}_\mu(t) &= \frac{1}{\sqrt{D}} \boldsymbol{W}^{0}(t)\boldsymbol{x}_\mu \\
+            &= \frac{1}{\sqrt{D}}\left(\boldsymbol{W}^{0}(0) + \frac{\gamma}{\sqrt{ND}}\int_0^t ds \sum_\nu\Delta_\nu(s) \boldsymbol{g}_\nu(s)\boldsymbol{x}_\nu^\top\right)\boldsymbol{x}_\mu \\
             &= \boldsymbol{\chi}_\mu + \frac{\gamma}{\sqrt{N}}\int_0^t ds \sum_\nu\Delta_\nu(s) \boldsymbol{g}_\nu(s)K_{\mu\nu}^x \\
-            \boldsymbol{g}_\mu(t) &= \boldsymbol{z}(t) \odot \phi(\boldsymbol{h}_\mu(t)) \\
+            \boldsymbol{g}_\mu(t) &= \boldsymbol{z}(t) \odot \dot\phi(\boldsymbol{h}_\mu(t)) \\
             \boldsymbol{z}(t) &= \boldsymbol{w}^{1}(t)\\
             &= \boldsymbol{\xi} + \frac{\gamma}{\sqrt{N}}\int_0^t ds \sum_\nu\Delta_\nu(s) \phi(\boldsymbol{h}_\nu(s))\\
         \end{align}
         となる。
-        ただし第一項をそれぞれ $\boldsymbol{\chi}_\mu := \frac{1}{\sqrt{N}}\boldsymbol{W}^{0}(0)\boldsymbol{x}_\mu, \boldsymbol{\xi} := \boldsymbol{w}^{1}(0)$ とおいた。
+        ただし第一項をそれぞれ $\boldsymbol{\chi}_\mu := \frac{1}{\sqrt{D}}\boldsymbol{W}^{0}(0)\boldsymbol{x}_\mu, \boldsymbol{\xi} := \boldsymbol{w}^{1}(0)$ とおいた。
         どちらも $t$ に依存しない定数であることに注意しよう。
         ネタバレしておくと一般の $L$ ではこれが時間変化するようになって大変になる。
     </p>
     <p>
         パラメータ初期化のランダムネスは $\boldsymbol{\chi}_\mu$ と $\boldsymbol{\xi}$ にのみ現れていて、それがベクトル $\boldsymbol{h}_\mu(t), \boldsymbol{g}_\mu(t)$ に影響し、カーネル $\Phi_{\mu\alpha}^1, G_{\mu\alpha}^1$ に影響している。
-        このランダムネスをまともに扱うと $O(N)$ になってしまうが、知りたいのはカーネル $\Phi_{\mu\alpha}^1, G_{\mu\alpha}^1$ であることを念頭に置いて、これを回避する。
+        この微視的なランダムネスをまともに扱うと $O(N)$ になってしまうが、知りたいのはカーネル $\Phi_{\mu\alpha}^1, G_{\mu\alpha}^1$ であることを念頭に置いて、これを回避する。
         抽象的には、パラメータ初期値という微視変数からカーネルという巨視変数に変数変換をすることで測度の集中が起きるということ。
-        具体的には、 $\boldsymbol{W}^0(0), \boldsymbol{w}^1(0)$ のモーメント生成関数を変形して鞍点法を用いることで、カーネル $\Phi_{\mu\alpha}^1, G_{\mu\alpha}^1$ のモーメント生成関数を入手するということ。
+        具体的には、 $\boldsymbol{W}^0(0), \boldsymbol{w}^1(0)$ のモーメント生成関数を変形することで、カーネル $\Phi_{\mu\alpha}^1, G_{\mu\alpha}^1$ の $O(1)$ の計算方法を入手するということ。
     </p>
 
     <details>
@@ -521,7 +527,7 @@
         \end{align}
     </p>
     <p>
-        このモーメント生成関数をよく見ると、独立な $N$ 個の1体問題の積に分解できることがわかる。
+        このモーメント生成関数をよく見ると、<strong>独立な $N$ 個の1体問題の積に分解できる</strong>ことがわかる。
         すなわち、
         $$
         \left\{
@@ -544,6 +550,116 @@
         $$
         と書ける。$\chi_\mu, \xi, j^\mu, v$ はいずれもスカラーである。
     </p>
+    <p>
+        1体のモーメント生成関数 $Z_1$ は $i$ によらない点に注目しよう。
+        N体のモーメント生成関数 $Z$ がidenticalな $Z_1$ の積で書けるということは、ベクトル $\boldsymbol{\chi}_\mu, \boldsymbol{\xi}$ の各成分が独立同分布に従う確率変数であることを意味する。
+    </p>
+    <p>
+        さらに $\boldsymbol{h}_\mu(t), \boldsymbol{g}_\mu(t)$ の表式を確認すると、こちらも成分 $i$ ごとの相互作用が存在せず、
+        \begin{align}
+            h_\mu(t) &= \chi_\mu + \frac{\gamma}{\sqrt{N}}\int_0^t ds \sum_\nu\Delta_\nu(s) g_\nu(s)K_{\mu\nu}^x \\
+            g_\mu(t) &= z(t) \odot \dot\phi(h_\mu(t)) \\
+            z(t) &= \xi + \frac{\gamma}{\sqrt{N}}\int_0^t ds \sum_\nu\Delta_\nu(s) \phi(h_\nu(s))\\
+        \end{align}
+        と各成分の時間発展を独立に記述できることがわかる。
+    </p>
+    <p>
+        したがって、巨視変数であるカーネルの期待値は次のように求められる。
+        \begin{align}
+            \Phi^1_{\mu\alpha}(t,s) &= \left\langle\frac{1}{N}\phi(\boldsymbol{h}_\mu(t)) \cdot \phi(\boldsymbol{h}_\alpha(s))\right\rangle_{\{\boldsymbol{\chi}_\mu\}, \boldsymbol{\xi}} \\
+            &= \left\langle\phi(h_\mu(t)) \phi(h_\alpha(s))\right\rangle_{\{\chi_\mu\}, \xi} \\
+            G^1_{\mu\alpha}(t,s) &= \left\langle\frac{1}{N}\boldsymbol{g}_\mu(t) \cdot \boldsymbol{h}_\alpha(s)\right\rangle_{\{\boldsymbol{\chi}_\mu\}, \boldsymbol{\xi}} \\
+            &= \left\langle g_\mu(t) g_\alpha(s)\right\rangle_{\{\chi_\mu\}, \xi}
+        \end{align}
+    </p>
+    <details>
+        <summary>
+            ここで $\langle\rangle_{\{\chi_\mu\}, \xi}$ とは、$\boldsymbol{\chi} \sim \mathcal{N}(0,\boldsymbol{K}^x), \xi \sim \mathcal{N}(0,1)$ というガウシアンでの期待値である。（クリックして表示）
+        </summary>
+        <p>
+            その理由を説明する。
+            一体問題のモーメント生成関数は次のようにさらに分解できる。
+            $$
+            \left\{
+            \begin{align}
+                Z_1[\{j^\mu\}_{\mu \in [P]}, v] &= Z_1^\chi[\boldsymbol{j}] * Z_1^\xi[v] \\
+                Z_1^\chi[\boldsymbol{j}] &= \int \frac{d\boldsymbol{\chi}d \boldsymbol{\hat\chi}}{(2\pi)^P}
+                \exp\left(
+                    i\boldsymbol{\hat\chi} \cdot \boldsymbol{\chi}
+                    - \frac{1}{2} \boldsymbol{\hat\chi}^\top \boldsymbol{K}^x \boldsymbol{\hat\chi}
+                    + \boldsymbol{j} \cdot \boldsymbol{\chi}
+                \right) \\
+                Z_1^\xi[v] &= \int\frac{d\xi d\hat\xi}{2\pi}\exp\left( i\hat\xi \xi - \frac{1}{2}\hat\xi^2 + v \xi \right)
+            \end{align}
+            \right.
+            $$
+            ベクトル $\boldsymbol{j}$ や $\boldsymbol{\chi}$ は長さ $N$ ではなく長さ $P$ であることに注意。
+            すなわち素子 $i$ ではなくデータ $\mu$ のインデックスを持つ確率変数である。
+            同様に $\boldsymbol{K}^x$ は $K_{\mu\alpha}^x$ を $(\mu, \alpha)$ 成分に持つ $P\times P$ 行列である。
+        </p>
+        <p>
+            これをよく見ると、$Z_1^\chi[\boldsymbol{j}]$ は $\boldsymbol{\chi} \sim \mathcal{N}(0,\boldsymbol{K}^x)$ の時のモーメント生成関数で、$Z_1^\xi[v]$ は $\xi \sim \mathcal{N}(0,1)$ の時のモーメント生成関数であることに気づく。
+            実際に、$\delta$ 関数のフーリエ変換表示
+            $$
+                \delta(\boldsymbol{\hat\chi}-i\boldsymbol{j}) = \int \frac{d\boldsymbol{\chi}}{(2\pi)^P} \exp(\boldsymbol{\chi}\cdot(i\boldsymbol{\hat\chi}+\boldsymbol{j}))
+            $$
+            を用いて、
+            \begin{align}
+                Z_1^\chi[\boldsymbol{j}] &= \int d\boldsymbol{\hat\chi} \delta(\boldsymbol{\hat\chi}-i\boldsymbol{j})
+                \exp\left(- \frac{1}{2} \boldsymbol{\hat\chi}^\top \boldsymbol{K}^x \boldsymbol{\hat\chi}\right) \\
+                &= \exp\left(\frac{1}{2} \boldsymbol{j}^\top \boldsymbol{K}^x \boldsymbol{j}\right)
+            \end{align}
+            と変形でき、これは $\boldsymbol{\chi} \sim \mathcal{N}(0,\boldsymbol{K}^x)$ の時のモーメント生成関数である。
+            $\xi$ についても同様。
+        </p>
+        <p>
+            振り返ってみるとモーメント生成関数のガウス積分をした後にガウス積分の逆をしているので、回り道をしたように見える。
+            実際十分な洞察力があればガウス積分をする前の形式から独立な1体問題に分解できることを見抜けると思うが、わかりやすさのためにここではこのように進めた。
+        </p>
+        <p class="close-btn">(クリックして非表示)</p>
+    </details>
+    <p>
+        以上より、出力ダイナミクスを $O(1)$ の計算量で記述することができた。
+        $$
+        \left\{
+        \begin{align}
+            \boldsymbol{\chi} &\sim \mathcal{N}(0,\boldsymbol{K}^x) \\
+            \xi &\sim \mathcal{N}(0,1) \\
+            h_\mu(t) &= \chi_\mu + \frac{\gamma}{\sqrt{N}}\int_0^t ds \sum_\nu\Delta_\nu(s) g_\nu(s)K_{\mu\nu}^x \\
+            g_\mu(t) &= z(t) \odot \dot\phi(h_\mu(t)) \\
+            z(t) &= \xi + \frac{\gamma}{\sqrt{N}}\int_0^t ds \sum_\nu\Delta_\nu(s) \phi(h_\nu(s))\\
+            \Phi^1_{\mu\alpha}(t,t) &= \left\langle\phi(h_\mu(t)) \phi(h_\alpha(t))\right\rangle_{\boldsymbol{\chi}, \xi} \\
+            G^1_{\mu\alpha}(t,t) &= \left\langle g_\mu(t) g_\alpha(t)\right\rangle_{\boldsymbol{\chi}, \xi} \\
+            \frac{\partial f_\mu}{\partial t} &= \sum_\alpha \left(K_{\mu\alpha}^x G^1_{\mu\alpha}(t,t) + \Phi^1_{\mu\alpha}(t,t)\right) \Delta_\alpha (t) \\
+        \end{align}
+        \right.
+        $$
+    </p>
+    <p>
+        数値計算する場合は、まずガウス分布から $\boldsymbol{\chi}_\mu, \xi$ を多数サンプリングする。
+        次にそれぞれのサンプルを使って $h_\mu(t), g_\mu(t), z(t)$ の時間発展を好きな $T$ まで計算する。
+        続いて各時刻で $\Phi^1_{\mu\alpha}(t,t), G^1_{\mu\alpha}(t,t)$ のサンプル平均を求める。
+        最後に一番下の式を使って出力の時間発展を計算する。
+    </p>
+
+
+    <details>
+        <summary>通常のDMFTとの違い（クリックして表示）</summary>
+        <p>
+            <a href="https://doi.org/10.1103/PhysRevLett.61.259">Sompolinsky et. al.</a>とか<a href="https://doi.org/10.48550/arXiv.1901.10416">Helias & Dahmen</a>
+            で紹介されたような通常のDMFTでは、相互作用する多数の微視変数で書いたモーメント生成関数を変形して、巨視変数である平均場との相互作用の独立な積に帰着させるという方法が用いられていた。
+            それに対して、今回の方法では、微視変数 $\boldsymbol{\chi}_\mu, \boldsymbol{\xi}$ の時点で独立な1体問題の積に分解できている。
+            モーメント生成関数を導入したのは巨視変数であるカーネルを少ない自由度で記述するための見通しが良くなるからだ。
+            この点で今回のDMFTの使い方は非典型的である。
+        </p>
+        <p>
+            普通のDMFTと共通するのはモーメント生成関数(モーメント母関数)を導入して指数関数の肩でごちゃごちゃ計算するという点なので、<strong>「DMFTはお母さんの肩をもむ」</strong>という語呂合わせで覚えよう。
+        </p>
+        <p class="close-btn">(クリックして非表示)</p>
+    </details>
+
+
+    <h3>本題：一般のLの場合</h3>
     <details>
         <summary>
             巨視変数であるカーネルに変数変換して、（クリックして表示）
@@ -558,36 +674,37 @@
         <p>
             次に、$\boldsymbol{\chi}_\mu, \boldsymbol{\xi}$ に変数変換した時と同様に、$\delta$ 関数を使ってカーネルの定義式となる恒等式を導入する。
             \begin{align}
-                1 &= N \int d\Phi_{\mu\alpha}(t,s) \delta\left(N \Phi_{\mu\alpha}(t,s) - \phi(\boldsymbol{h}_\mu(t)) \cdot \phi(\boldsymbol{h}_\alpha(s))\right) \\
-                &= Ndtds \int \frac{d\Phi_{\mu\alpha}(t,s)d\hat\Phi_{\mu\alpha}(t,s)}{2\pi i} \exp\left(dtds\hat\Phi_{\mu\alpha}(t,s)\left(N\Phi_{\mu\alpha}(t,s) - \phi(\boldsymbol{h}_\mu(t)) \cdot \phi(\boldsymbol{h}_\alpha(s))\right)\right) \\
-                1 &= N \int dG_{\mu\alpha}(t,s) \delta\left(N G_{\mu\alpha}(t,s) - \boldsymbol{g}_\mu(t)\cdot\boldsymbol{g}_\alpha(s)\right) \\
-                &= Ndtds \int \frac{dG_{\mu\alpha}(t,s)d\hat{G}_{\mu\alpha}(t,s)}{2\pi i} \exp\left(dtds\hat{G}_{\mu\alpha}(t,s)\left(N G_{\mu\alpha}(t,s) - \boldsymbol{g}_\mu(t)\cdot\boldsymbol{g}_\alpha(s)\right)\right) 
+                1 &= N \int d\Phi^1_{\mu\alpha}(t,s) \delta\left(N \Phi^1_{\mu\alpha}(t,s) - \phi(\boldsymbol{h}_\mu(t)) \cdot \phi(\boldsymbol{h}_\alpha(s))\right) \\
+                &= Ndtds \int \frac{d\Phi^1_{\mu\alpha}(t,s)d\hat\Phi^1_{\mu\alpha}(t,s)}{2\pi i} \exp\left(dtds\hat\Phi^1_{\mu\alpha}(t,s)\left(N\Phi^1_{\mu\alpha}(t,s) - \phi(\boldsymbol{h}_\mu(t)) \cdot \phi(\boldsymbol{h}_\alpha(s))\right)\right) \\
+                1 &= N \int dG^1_{\mu\alpha}(t,s) \delta\left(N G^1_{\mu\alpha}(t,s) - \boldsymbol{g}_\mu(t)\cdot\boldsymbol{g}_\alpha(s)\right) \\
+                &= Ndtds \int \frac{dG^1_{\mu\alpha}(t,s)d\hat{G}^1_{\mu\alpha}(t,s)}{2\pi i} \exp\left(dtds\hat{G}^1_{\mu\alpha}(t,s)\left(N G^1_{\mu\alpha}(t,s) - \boldsymbol{g}_\mu(t)\cdot\boldsymbol{g}_\alpha(s)\right)\right) 
             \end{align}
         </p>
         <p>
             最後に、全ての $\mu, \alpha, t,s$ に関する恒等式を、はじめの式の両辺に掛ける。
             \begin{align}
                 Z[\{\boldsymbol{j}_\mu\}_{\mu \in [P]}, \boldsymbol{v}]
-                &\propto \int \prod_{\mu, \alpha, t, s} d\Phi d\hat\Phi dG d\hat{G} \exp\left(NS[\Phi, \hat\Phi, G, \hat{G}]\right) \\
-                S[\Phi, \hat\Phi, G, \hat{G}]
+                &\propto \int \prod_{\mu, \alpha, t, s} d\Phi^1 d\hat\Phi^1 dG^1 d\hat{G}^1 \exp\left(NS[\Phi^1, \hat\Phi^1, G^1, \hat{G}^1]\right) \\
+                S[\Phi^1, \hat\Phi^1, G^1, \hat{G}^1]
                 &= \sum_{\mu, \alpha}\int dtds \left(
-                    \hat\Phi \Phi + \hat{G} G
-                    - \frac{1}{N}\hat\Phi \phi(\boldsymbol{h}_\mu(t)) \cdot \phi(\boldsymbol{h}_\alpha(s))
-                    - \frac{1}{N}\hat{G} \boldsymbol{g}_\mu(t) \cdot \boldsymbol{g}_\alpha(s)
+                    \hat\Phi^1 \Phi^1 + \hat{G}^1 G^1
+                    - \frac{1}{N}\hat\Phi^1 \phi(\boldsymbol{h}_\mu(t)) \cdot \phi(\boldsymbol{h}_\alpha(s))
+                    - \frac{1}{N}\hat{G}^1 \boldsymbol{g}_\mu(t) \cdot \boldsymbol{g}_\alpha(s)
                 \right) \\
                 &\qquad + \frac{1}{N} \sum_{i=1}^N \ln Z_1[\{j^\mu_i\}_{\mu \in [P]}, v_i] \\
-                &= \sum_{\mu, \alpha}\int dtds \left( \hat\Phi \Phi + \hat{G} G \right) \\
+                &= \sum_{\mu, \alpha}\int dtds \left( \hat\Phi^1 \Phi^1 + \hat{G}^1 G^1 \right) \\
                 &\qquad + \frac{1}{N} \sum_{i=1}^N \ln \left(
                     Z_1[\{j^\mu_i\}_{\mu \in [P]}, v_i]
                     \exp\left(
                         -\sum_{\mu, \alpha}\int dtds \left(
-                            \hat\Phi \phi(h^\mu_i(t)) \phi(h^\alpha_i(s))
-                            + \hat{G} g^\mu_i(t) \cdot g^\alpha_i(s)
+                            \hat\Phi^1 \phi(h^\mu_i(t)) \phi(h^\alpha_i(s))
+                            + \hat{G}^1 g^\mu_i(t) \cdot g^\alpha_i(s)
                         \right)
                     \right)
                 \right)
             \end{align}
-            ただし例えば $\Phi = \Phi_{\mu\alpha}(t,s)$ と略記している。
+            ただし例えば $\Phi^1 = \Phi^1_{\mu\alpha}(t,s)$ と略記している。
+            これでベクトル $\boldsymbol{\chi}_\mu, \boldsymbol{\xi}$ とカーネル $\Phi^1_{\mu\alpha}(t,s), G^1_{\mu\alpha}(t,s)$ が独立に扱えるようになった。
         </p>
         <details>
             <summary>通常のDMFTとの違い（クリックして表示）</summary>
@@ -598,7 +715,7 @@
                 この点で今回のDMFTの使い方は非典型的である。
             </p>
             <p>
-                普通のDMFTとの共通点はモーメント生成関数(モーメント母関数)を導入して指数関数の肩でごちゃごちゃ計算するという点なので、「DMFTはお母さんの肩をもむ」というスローガンで覚えよう。
+                普通のDMFTと共通するのはモーメント生成関数(モーメント母関数)を導入して指数関数の肩でごちゃごちゃ計算するという点なので、<strong>「DMFTはお母さんの肩をもむ」</strong>というスローガンで覚えよう。
             </p>
             <p class="close-btn">(クリックして非表示)</p>
         </details>
@@ -607,21 +724,32 @@
 
     <details>
         <summary>
-            作用 $S$ について鞍点方程式を求めると、次のようになる。（クリックして表示）
+            作用 $S$ について鞍点方程式を求めると、次の表式を得る。（クリックして表示）
         </summary>
         <p>
-            hoge
+            ここでいう鞍点法とは、ある汎函数が $y = \int dx \exp(Ng(x))$ のように表されている時の、$N\to\infty$ での近似法である。
+            $N$ が小さい時は広い範囲の $x$ が積分に寄与するが、$N$ が大きくなると $g(x)$ の最大値を与える $x$ の寄与が圧倒的になり、他の部分の寄与は無視できる。
+            したがって $y \sim \exp(Ng(x^*))$ と近似できる。ただし $x^*$ は $g(x)$ の最大値を与える $x$ であり、$\frac{dg(x)}{dx}|_{x=x^*} = 0$ を満たす。
+            定数倍はズレるけど今回は気にしなくてOK。
+        </p>
+        <p>
+            今の状況は、$Z \propto \int d\Phi^1 d\hat\Phi^1 dG^1 d\hat{G}^1 \exp\left(NS[\Phi^1, \hat\Phi^1, G^1, \hat{G}^1]\right)$ と表せていて、
+            $S$ が $O_N(1)$ の大きさを持つので、鞍点法が使える。具体的な鞍点方程式は以下の通り。
+            \begin{align}
+                \frac{\delta S}{\delta \Phi^1_{\mu\alpha}(t,s)} &= 0 \to \hat\Phi^1_{\mu\alpha}(t,s) = 0 \\
+                \frac{\delta S}{\delta \hat\Phi^1_{\mu\alpha}(t,s)} &= 0 \to \Phi^1_{\mu\alpha}(t,s) = 0 \\
+                \frac{\delta S}{\delta G^1_{\mu\alpha}(t,s)} &= 0 \to \hat{G}^1_{\mu\alpha}(t,s) = 0 \\
+                \frac{\delta S}{\delta \hat{G}^1_{\mu\alpha}(t,s)} &= 0 \to G^1_{\mu\alpha}(t,s) = 0
+            \end{align}
+        </p>
+        <p>
+            これを解くと、</p>
+        <p>
+            余談だけど、鞍点法というより極値法と呼んだ方が実態に即していると思う。
+            どうして鞍点法と呼ぶかは分からない。
         </p>
         <p class="close-btn">(クリックして非表示)</p>
     </details>
-    <p>
-        $$
-            Z[\{\boldsymbol{j}_\mu\}_{\mu \in [P]}, \boldsymbol{v}]
-        $$
-    </p>
-
-
-    <h3>本題：一般のLの場合</h3>
 
     <h3>元論文の誤植</h3>
     <p>ページ数はarxivのv3のPDFファイルに準拠している。</p>
