@@ -527,7 +527,7 @@
         \end{align}
     </p>
     <p>
-        このモーメント生成関数をよく見ると、<strong>独立な $N$ 個の1体問題の積に分解できる</strong>ことがわかる。
+        このモーメント生成関数をよく見ると、独立な $N$ 個の1体問題の積に分解できることがわかる。
         すなわち、
         $$
         \left\{
@@ -537,14 +537,14 @@
 
                 Z_1[\{j^\mu\}_{\mu \in [P]}, v]
                 &= \int \left(\prod_\mu \frac{d\chi_\mu d \hat\chi_\mu}{2\pi}\right)\frac{d\xi d\hat\xi}{2\pi}
-                \exp\left(
+                \exp\left( S_1[\{\chi_\mu\}, \xi] \right) \\
+                S_1[\{\chi_\mu\}, \xi] &=
                     \sum_\mu i\hat\chi_\mu\chi_\mu
-                    - \frac{1}{2}\sum_{\mu\alpha} \hat\chi_\mu \hat\chi_\alpha K_{\mu\alpha}^x \right. \\
-                    & \qquad \left. + i\hat\xi \xi
+                    - \frac{1}{2}\sum_{\mu\alpha} \hat\chi_\mu \hat\chi_\alpha K_{\mu\alpha}^x
+                    + i\hat\xi \xi
                     - \frac{1}{2}\hat\xi^2
                     + \sum_\mu j^\mu \chi_\mu
                     + v \xi
-                \right)
             \end{align}
         \right.
         $$
@@ -555,13 +555,24 @@
         N体のモーメント生成関数 $Z$ がidenticalな $Z_1$ の積で書けるということは、ベクトル $\boldsymbol{\chi}_\mu, \boldsymbol{\xi}$ の各成分が独立同分布に従う確率変数であることを意味する。
     </p>
     <p>
-        さらに $\boldsymbol{h}_\mu(t), \boldsymbol{g}_\mu(t)$ の表式を確認すると、こちらも成分 $i$ ごとの相互作用が存在せず、
+        しかし、これは $\boldsymbol{h}_\mu(t), \boldsymbol{g}_\mu(t)$ の各成分が独立であることを意味<strong>しない</strong>。
+        表式を再掲すると、
+        $$
+        \left\{
         \begin{align}
-            h_\mu(t) &= \chi_\mu + \frac{\gamma}{\sqrt{N}}\int_0^t ds \sum_\nu\Delta_\nu(s) g_\nu(s)K_{\mu\nu}^x \\
-            g_\mu(t) &= z(t) \odot \dot\phi(h_\mu(t)) \\
-            z(t) &= \xi + \frac{\gamma}{\sqrt{N}}\int_0^t ds \sum_\nu\Delta_\nu(s) \phi(h_\nu(s))\\
+            \boldsymbol{h}_\mu(t) &= \boldsymbol{\chi}_\mu + \frac{\gamma}{\sqrt{N}}\int_0^t ds \sum_\nu\Delta_\nu(s) \boldsymbol{g}_\nu(s)K_{\mu\nu}^x \\
+            \boldsymbol{g}_\mu(t) &= \boldsymbol{z}(t) \odot \dot\phi(\boldsymbol{h}_\mu(t)) \\
+            \boldsymbol{z}(t) &= \boldsymbol{\xi} + \frac{\gamma}{\sqrt{N}}\int_0^t ds \sum_\nu\Delta_\nu(s) \phi(\boldsymbol{h}_\nu(s))\\
         \end{align}
-        と各成分の時間発展を独立に記述できることがわかる。
+        \right.
+        $$
+        であり、出力 $f_\mu(t)$ によって定まる $\Delta_\mu(t)$ を通して各成分が相互作用している。
+    </p>
+    <p>
+        これを解決するために、<strong>出力を決定するカーネルを主役にしよう</strong>。
+        巨視変数であるカーネルが決定論的になることを示して、ベクトル $\boldsymbol{h}_\mu(t), \boldsymbol{g}_\mu(t)$ の $N$ 個の成分が相互作用するのではなく、各成分が独立にカーネルと相互作用するという描像に帰着する。
+        より具体的には、モーメント生成関数をベクトルからカーネルに変数変換して、カーネルの分布について鞍点法が使えることを確認する。
+        そして鞍点方程式がカーネルの $O(1)$ の計算方法を与えることを示す。
     </p>
     <p>
         したがって、巨視変数であるカーネルの期待値は次のように求められる。
@@ -626,7 +637,7 @@
             \boldsymbol{\chi} &\sim \mathcal{N}(0,\boldsymbol{K}^x) \\
             \xi &\sim \mathcal{N}(0,1) \\
             h_\mu(t) &= \chi_\mu + \frac{\gamma}{\sqrt{N}}\int_0^t ds \sum_\nu\Delta_\nu(s) g_\nu(s)K_{\mu\nu}^x \\
-            g_\mu(t) &= z(t) \odot \dot\phi(h_\mu(t)) \\
+            g_\mu(t) &= z(t) \dot\phi(h_\mu(t)) \\
             z(t) &= \xi + \frac{\gamma}{\sqrt{N}}\int_0^t ds \sum_\nu\Delta_\nu(s) \phi(h_\nu(s))\\
             \Phi^1_{\mu\alpha}(t,t) &= \left\langle\phi(h_\mu(t)) \phi(h_\alpha(t))\right\rangle_{\boldsymbol{\chi}, \xi} \\
             G^1_{\mu\alpha}(t,t) &= \left\langle g_\mu(t) g_\alpha(t)\right\rangle_{\boldsymbol{\chi}, \xi} \\
@@ -646,7 +657,7 @@
     <details>
         <summary>通常のDMFTとの違い（クリックして表示）</summary>
         <p>
-            <a href="https://doi.org/10.1103/PhysRevLett.61.259">Sompolinsky et. al.</a>とか<a href="https://doi.org/10.48550/arXiv.1901.10416">Helias & Dahmen</a>
+            <a href="https://arxiv.org/abs/1809.06042">Crisanti & Sompolinsky</a>とか<a href="https://doi.org/10.48550/arXiv.1901.10416">Helias & Dahmen</a>
             で紹介されたような通常のDMFTでは、相互作用する多数の微視変数で書いたモーメント生成関数を変形して、巨視変数である平均場との相互作用の独立な積に帰着させるという方法が用いられていた。
             それに対して、今回の方法では、微視変数 $\boldsymbol{\chi}_\mu, \boldsymbol{\xi}$ の時点で独立な1体問題の積に分解できている。
             モーメント生成関数を導入したのは巨視変数であるカーネルを少ない自由度で記述するための見通しが良くなるからだ。
