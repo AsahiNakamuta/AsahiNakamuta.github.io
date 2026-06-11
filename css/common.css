@@ -104,7 +104,7 @@ h5 {
   font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
   letter-spacing: 4px;
   line-height: 1.2;
-  text-transform: uppercase;
+  /* text-transform: uppercase; */
   overflow-wrap: break-word;
 }
 h1 .ja,

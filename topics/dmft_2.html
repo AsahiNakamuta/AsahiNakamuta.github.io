@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="
+        動的平均場理論入門2">
+    <title>動的平均場理論入門2 - Asahi Nakamuta</title>
+    <link rel="stylesheet" href="../css/reset.css">
+    <link rel="stylesheet" href="../css/common.css">
+    <link rel="stylesheet" href="../css/each.css">
+    <link rel="stylesheet"
+        href="https://maxst.icons8.com/vue-static/landings/line-awesome/line-awesome/1.3.0/css/line-awesome.min.css">
+    <script src="../js/loadCommon.js"></script>
+
+
+    <style>
+        details {
+        margin: 10px 0;
+        }
+        details > *:not(summary) {
+            padding-left: 20px;
+        }
+        details[open] {
+            background-color: #f5f5f5; /* 背景色（うすいグレー） */
+            padding: 10px;             /* 内側の余白 */
+            border-radius: 5px;        /* 角を少し丸くする */
+        }
+    </style>
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+       // .close-btn を持つ要素すべてに対して処理
+        document.querySelectorAll('.close-btn').forEach(btn => {
+          btn.addEventListener('click', function() {
+            // 1. 親のdetails要素を探す
+            const details = this.closest('details');
+            
+            // 2. その中のsummary要素（見出し）を探す
+            const summary = details.querySelector('summary');
+      
+            // 3. detailsを閉じる
+            details.removeAttribute('open');
+      
+            // 4. summaryの位置までスクロールして戻る
+            summary.scrollIntoView({
+              behavior: 'smooth', // ヌルっと動くアニメーション
+              block: 'center'     // 見出しを「画面の中央」に持ってくる
+            });
+          });
+        });
+    });
+    </script>
+</head>
+
+<body>
+    <nav id="js-globalnav" class="globalnav" aria-label="メインナビゲーション">
+        <ul style="list-style-type:none; padding-inline-start:0;" class="globalnav__main">
+            <li class="globalnav__item"><a href="../index.html">トップ</a></li>
+            <li class="globalnav__item"><a href="../cv.html">CV</a></li>
+            <li class="globalnav__item"><a href="../topics.html">記事一覧</a></li>
+        </ul>
+    </nav>
+
+    <main class="article" id="js-main">
+        <h1 class="heading-m">動的平均場理論入門2</h1>
+
+        <h3>概要</h3>
+        <p class="summary">
+            Bordelonによる線型ニューラルネットに対するDMFT解析の解説。
+        </p>
+
+        <h3>論文へのリンク</h3>
+        <p>
+            <a href="https://arxiv.org/abs/2402.01092" target="_blank">Bordelon, Atanasov, Pehlevan, A Dynamical Model of Neural Scaling Laws (2024)</a>
+        </p>
+
+        <h3>問題設定</h3>
+        <p>
+            次のような線形 random feature modelを考えよう。
+            \begin{align}
+                f_p(t)
+                =
+                \frac{1}{\sqrt{N}}
+                \boldsymbol{w}(t)^\top
+                \left(
+                    \frac{1}{\sqrt{M}}
+                    \boldsymbol{A}
+                    \boldsymbol{x}_p
+                \right)
+            \end{align}
+            ここで $\{\boldsymbol{x}_p\}_{p=1,...,P}$ は $M$ 次元の入力データ、$\boldsymbol{w}(t) \in \mathbb{R}^N$ は重みベクトル、
+            $\boldsymbol{A} \in \mathbb{R}^{N\times M}$ は入力データのランダムな射影行列、$f_p(t)$ は時刻 $t$ におけるデータ $\boldsymbol{x}_p$ に対する出力である。
+            入力データ $\boldsymbol{x}$ の共分散行列は対角行列であると仮定する。
+        </p>
+        <p>
+            このモデルの重み $\boldsymbol{w}(t)$ をteacher-studentの設定でGradient flowで学習する。すなわち
+            \begin{align}
+                y_p
+                =
+                \frac{1}{\sqrt{M}}
+                \boldsymbol{w}^{\star \top}
+                \boldsymbol{x}_p
+            \end{align}
+            というteacherによって経験誤差 $\hat{\mathcal{L}}$ を
+            \begin{align}
+                \hat{\mathcal{L}}(t)
+                =
+                \frac{1}{P}
+                \sum_{p=1}^P
+                \left(
+                f_p(t)-y_p
+                \right)^2
+            \end{align}
+            と定義して、重み $\boldsymbol{w}(t)$ を
+            \begin{align}
+                \frac{d\boldsymbol{w}(t)}{dt}
+                =
+                -\eta \nabla_{\boldsymbol{w}(t)} \hat{\mathcal{L}}(t)
+            \end{align}
+            と時間発展させる。
+            このときの汎化誤差 $\mathcal{L}(t) = \mathbb{E}_{\boldsymbol{x}}[\left(f(\boldsymbol{x},t)-y(\boldsymbol{x})\right)^2]$ のダイナミクスを求めたい。
+        </p>
+        <p>
+            上の勾配降下の式は、 $N$ 次元ベクトル $\boldsymbol{w}(t)$ の各要素が相互作用しながら時間発展することを意味している。
+            これでは $N$ が大きくなるときに解析が困難なので、動的平均場理論を使って $N$ が大きい極限でのダイナミクスを平均場近似する。
+        </p>
+
+        <h3>$\boldsymbol{v}(t)$ の式に変換する</h3>
+        <p>
+            teacherの重みとstudentの重みの差を表す量として、
+            $
+            \boldsymbol{v}^0(t)
+            :=
+            \boldsymbol{w}^{\star}
+            -
+            \frac{1}{\sqrt{N}}
+            \boldsymbol{A}^\top
+            \boldsymbol{w}(t)
+            $
+            を導入する。
+        </p>
+        <details>
+            <summary>
+                この量の時間発展は、
+                \begin{align}
+                    \frac{d\boldsymbol{v}^0(t)}{dt}
+                    =
+                    -
+                    \left(
+                    \frac{1}{N}
+                    \boldsymbol{A}^\top
+                    \boldsymbol{A}
+                    \right)
+                    \left(
+                    \frac{1}{P}
+                    \boldsymbol{X}^\top
+                    \boldsymbol{X}
+                    \right)
+                    \boldsymbol{v}^0(t)
+                \end{align}
+                となる。（クリックして表示）</summary>
+            <p>
+                まず $\boldsymbol{w}(t)$ の時間発展方程式を求めよう。
+                \begin{align}
+                    \frac{d\boldsymbol{w}(t)}{dt}
+                    &= -\eta \nabla_{\boldsymbol{w}(t)} \hat{\mathcal{L}}(t) \\
+                    &= - \frac{2\eta}{P} \sum_{p=1}^P
+                    \left( f_p(t)-y_p \right)
+                    \frac{\partial f_p(t)}{\partial \boldsymbol{w}(t)} \\
+                    &= - \frac{2\eta}{P\sqrt{NM}} \sum_{p=1}^P
+                    \left( f_p(t)-y_p \right)
+                    \boldsymbol{A} \boldsymbol{x}_p \\
+                    &=  \frac{2\eta}{P\sqrt{N}M} \sum_{p=1}^P
+                    \boldsymbol{x}_p ^\top \boldsymbol{v}^0(t)
+                    \boldsymbol{A} \boldsymbol{x}_p \\
+                    &= \frac{2\eta}{P\sqrt{N}M}
+                    \boldsymbol{A} \boldsymbol{X}^\top \boldsymbol{X} \boldsymbol{v}^0(t)
+                \end{align}
+                ここで $\boldsymbol{X}_{p, *} := \boldsymbol{x}_p^\top$ とした。
+                $\boldsymbol{w}$ の時間発展と $\boldsymbol{v}^0(t)$ の定義を用いることで、$\boldsymbol{v}^0(t)$ の時間発展方程式が得られる。
+                \begin{align}
+                    \frac{d\boldsymbol{v}^0(t)}{dt}
+                    &= - \frac{1}{\sqrt{N}} \boldsymbol{A}^\top \frac{d\boldsymbol{w}(t)}{dt} \\
+                    &=
+                    -
+                    \left(
+                    \frac{1}{N}
+                    \boldsymbol{A}^\top
+                    \boldsymbol{A}
+                    \right)
+                    \left(
+                    \frac{1}{P}
+                    \boldsymbol{X}^\top
+                    \boldsymbol{X}
+                    \right)
+                    \boldsymbol{v}^0(t)
+                \end{align}
+                ここで $\eta = \frac{M}{2}$ とした。
+            </p>
+            <p class="close-btn">（クリックして非表示）</p>
+        </details>
+        <p>
+            この $\boldsymbol{v}^0(t)$ の時間発展方程式は線形な1階の微分方程式であり、非常に見通しの良い形である。
+            ただし相互作用がランダムな行列 $A$ と $X$ の複雑な積になっているのが厄介なので補助変数を増やして簡単にしよう。
+            ここで $\alpha := P/M, \nu := N/M$ として
+        </p>
+        <p>
+            \begin{align}
+                \boldsymbol{v}^1(t) &:= \frac{1}{\sqrt{M}} \boldsymbol{X} \boldsymbol{v}^0(t) \\
+                \boldsymbol{v}^2(t) &:= \frac{1}{\alpha\sqrt{M}} \boldsymbol{X}^\top \boldsymbol{v}^1(t) \\
+                \boldsymbol{v}^3(t) &:= \frac{1}{\sqrt{M}} \boldsymbol{A} \boldsymbol{v}^2(t) \\
+                \boldsymbol{v}^4(t) &:= \frac{1}{\nu\sqrt{M}} \boldsymbol{A}^\top \boldsymbol{v}^3(t) \\
+            \end{align}
+            を用いると、
+            \begin{align}
+                \frac{d\boldsymbol{v}^0(t)}{dt} = -\boldsymbol{v}^4(t)
+            \end{align}
+            と表記できる。
+        </p>
+
+        <h3>分配関数表示してクエンチ平均を取る</h3>
+        <p>
+            $\boldsymbol{v}^0(t)$ はランダム射影行列 $A$ とランダムデータ $X$ によって確率的になっている。
+            このクエンチした確率性に注目して分配関数を考えよう。
+        </p>
+        <p>
+            \begin{align}
+                Z[\{\boldsymbol{j}(t)\}]
+                &:= 
+                \left\langle
+                    \int \mathcal{D}\boldsymbol{v}^0
+                    \delta \left(
+                        \dot{\boldsymbol{v}}^0(t)
+                        + \left( \frac{1}{N}\boldsymbol{A}^\top \boldsymbol{A} \right)
+                        \left( \frac{1}{P}\boldsymbol{X}^\top \boldsymbol{X} \right)
+                        \boldsymbol{v}^0(t)
+                    \right)
+                    \exp\left(
+                        \int dt\boldsymbol{j}(t) \cdot \boldsymbol{v}^0(t)
+                    \right)
+                \right\rangle_{\boldsymbol{A}, \boldsymbol{X}} \\
+            \end{align}
+        </p>
+        <details>
+            <summary>式変形（クリックして表示）</summary>
+            <p>
+                まず $\boldsymbol{v}^1,\dots,\boldsymbol{v}^4$ の定義をデルタ関数のフーリエ変換表示によって導入する。
+                \begin{align}
+                    Z[\{\boldsymbol{j}(t)\}]
+                    &= \int \mathcal{D}[\boldsymbol{v}^0, \dots, \boldsymbol{v}^4, \hat{\boldsymbol{v}}^1, \dots, \hat{\boldsymbol{v}}^4]
+                    \delta \left(
+                        \dot{\boldsymbol{v}}^0(t)
+                        + \boldsymbol{v}^4(t)
+                    \right)
+                    \exp\left(
+                        \int dt \boldsymbol{j}(t) \cdot \boldsymbol{v}^0(t)
+                    \right) \\
+                    & \quad \times \left\langle
+                        \exp\left[
+                            i \int dt \left\{
+                                \hat{\boldsymbol{v}}^1(t) \cdot 
+                                \left(
+                                    \boldsymbol{v}^1(t)
+                                    - \frac{1}{\sqrt{M}} \boldsymbol{X} \boldsymbol{v}^0(t)
+                                \right)
+                                +
+                                \hat{\boldsymbol{v}}^2(t) \cdot 
+                                \left(
+                                    \boldsymbol{v}^2(t)
+                                    - \frac{1}{\alpha\sqrt{M}} \boldsymbol{X}^\top \boldsymbol{v}^1(t)
+                                \right)
+                            \right\}
+                        \right]
+                    \right\rangle_{\boldsymbol{X}} \\
+                    & \quad \times \left\langle
+                        \exp\left[
+                            i \int dt \left\{
+                                \hat{\boldsymbol{v}}^3(t) \cdot 
+                                \left(
+                                    \boldsymbol{v}^3(t)
+                                    - \frac{1}{\sqrt{M}} \boldsymbol{A} \boldsymbol{v}^2(t)
+                                \right)
+                                +
+                                \hat{\boldsymbol{v}}^4(t) \cdot 
+                                \left(
+                                    \boldsymbol{v}^4(t)
+                                    - \frac{1}{\nu\sqrt{M}} \boldsymbol{A}^\top \boldsymbol{v}^3(t)
+                                \right)
+                            \right\}
+                        \right]
+                    \right\rangle_{\boldsymbol{A}} \\
+                \end{align}
+            </p>
+            <p>
+                次に $\boldsymbol{A}$ と $\boldsymbol{X}$ に関する項を抜き出してガウス積分する。<br>
+                $\boldsymbol{A}$ に関する項：<br>
+                \begin{align}
+                    &\left\langle
+                        \exp\left[
+                            -\frac{i}{\sqrt{M}} \int dt \left\{
+                                \hat{\boldsymbol{v}}^3(t)^\top \boldsymbol{A} \boldsymbol{v}^2(t)
+                                + \frac{1}{\nu} \hat{\boldsymbol{v}}^4(t)^\top \boldsymbol{A}^\top \boldsymbol{v}^3(t)
+                            \right\}
+                        \right]
+                    \right\rangle_{\boldsymbol{A}\sim \mathcal{N}(0,\boldsymbol{I})} \\
+
+                    &= \prod_{n,m} \left\langle
+                        \exp\left[
+                            -\frac{i}{\sqrt{M}} A_{nm} \int dt \left\{
+                                \hat{v}_n^3(t) v_m^2(t)
+                                + \frac{1}{\nu} v_n^3(t) \hat{v}_m^4(t)
+                            \right\}
+                        \right]
+                    \right\rangle_{A_{nm} \sim \mathcal{N}(0,1)} \\
+
+                    &= \exp\left[
+                        -\frac{1}{2M} \sum_{n,m} \int dtds \left\{
+                            \hat{v}_n^3(t) \hat{v}_n^3(s) v_m^2(t) v_m^2(s)
+                            + \frac{2}{\nu} \hat{v}_n^3(t) v_n^3(s) v_m^2(t) \hat{v}_m^4(s)
+                            + \frac{1}{\nu^2} v_n^3(t) v_n^3(s) \hat{v}_m^4(t) \hat{v}_m^4(s)
+                        \right\}
+                    \right] \\
+
+                    &= \exp\left[
+                        -\frac{1}{2} \int dtds \left\{
+                            \hat{\boldsymbol{v}}^3(t) \cdot \hat{\boldsymbol{v}}^3(s)
+                            \left(
+                                \frac{1}{M} \boldsymbol{v}^2(t) \cdot \boldsymbol{v}^2(s)
+                            \right)
+                            + 2 \left(
+                                \frac{1}{N} \hat{\boldsymbol{v}}^3(t) \cdot \boldsymbol{v}^3(s)
+                            \right)
+                            \boldsymbol{v}^2(t) \cdot \hat{\boldsymbol{v}}^4(s)
+                            + \frac{1}{\nu} \left( 
+                                \frac{1}{N} \boldsymbol{v}^3(t) \cdot \boldsymbol{v}^3(s)
+                            \right)
+                            \hat{\boldsymbol{v}}^4(t) \cdot \hat{\boldsymbol{v}}^4(s)
+                        \right\}
+                    \right] \\
+
+                    &= \exp\left[
+                        -\frac{1}{2} \int dtds \left\{
+                            \hat{\boldsymbol{v}}^3(t) \cdot \hat{\boldsymbol{v}}^3(s) C_2(t,s)
+                            + 2 iR_3(s,t) \boldsymbol{v}^2(t) \cdot \hat{\boldsymbol{v}}^4(s)
+                            + \frac{1}{\nu} C_3(t,s) \hat{\boldsymbol{v}}^4(t) \cdot \hat{\boldsymbol{v}}^4(s)
+                        \right\}
+                    \right] \\
+
+                \end{align}
+
+                ここで以下のように巨視変数を導入した。
+                \begin{align}
+                    C_2(t,s) &= \frac{1}{M} \boldsymbol{v}^2(t) \cdot \boldsymbol{v}^2(s) \\
+                    R_3(t,s) &= -\frac{i}{N} \boldsymbol{v}^3(t) \cdot \hat{\boldsymbol{v}}^3(s) \\
+                    C_3(t,s) &= \frac{1}{N} \boldsymbol{v}^3(t) \cdot \boldsymbol{v}^3(s) \\
+                \end{align}
+
+                $\boldsymbol{X}$ に関する項：<br>
+                \begin{align}
+                    &\left\langle
+                        \exp\left[
+                            -\frac{i}{\sqrt{M}} \int dt \left\{
+                                \hat{\boldsymbol{v}}^1(t)^\top \boldsymbol{X} \boldsymbol{v}^0(t)
+                                + \frac{1}{\alpha}\hat{\boldsymbol{v}}^2(t)^\top \boldsymbol{X}^\top \boldsymbol{v}^1(t)
+                            \right\}
+                        \right]
+                    \right\rangle_{\boldsymbol{X}\sim \mathcal{N}(0,\boldsymbol{\Lambda})} \\
+
+                    &= \prod_{p,m} \left\langle
+                        \exp\left[
+                            -\frac{i}{\sqrt{M}} X_{pm} \int dt \left\{
+                                \hat{v}_p^1(t) v_m^0(t)
+                                + \frac{1}{\alpha} v_p^1(t) \hat{v}_m^2(t)
+                            \right\}
+                        \right]
+                    \right\rangle_{X_{pm} \sim \mathcal{N}(0,\lambda_m)} \\
+
+                    &= \exp\left[
+                        -\frac{1}{2M} \sum_{p,m} \lambda_m \int dtds \left\{
+                            \hat{v}_p^1(t) \hat{v}_p^1(s) v_m^0(t) v_m^0(s)
+                            + \frac{2}{\alpha} \hat{v}_p^1(t) v_p^1(s) v_m^0(t) \hat{v}_m^2(s)
+                            + \frac{1}{\alpha^2} v_p^1(t) v_p^1(s) \hat{v}_m^2(t) \hat{v}_m^2(s)
+                        \right\}
+                    \right] \\
+
+                    &= \exp\left[
+                        -\frac{1}{2} \int dtds \left\{
+                            \hat{\boldsymbol{v}}^1(t) \cdot \hat{\boldsymbol{v}}^1(s)
+                            \left(
+                                \frac{1}{M} \boldsymbol{v}^0(t)^\top \boldsymbol{\Lambda} \boldsymbol{v}^0(s)
+                            \right)
+                            + 2 \left(
+                                \frac{1}{P} \hat{\boldsymbol{v}}^1(t) \cdot \boldsymbol{v}^1(s)
+                            \right)
+                            \boldsymbol{v}^0(t)^\top \boldsymbol{\Lambda} \hat{\boldsymbol{v}}^2(s)
+                            + \frac{1}{\alpha} \left(
+                                \frac{1}{P} \boldsymbol{v}^1(t) \cdot \boldsymbol{v}^1(s)
+                            \right)
+                            \hat{\boldsymbol{v}}^2(t)^\top \boldsymbol{\Lambda} \hat{\boldsymbol{v}}^2(s)
+                        \right\}
+                    \right] \\
+
+                    &= \exp\left[
+                        -\frac{1}{2} \int dtds \left\{
+                            \hat{\boldsymbol{v}}^1(t) \cdot \hat{\boldsymbol{v}}^1(s) C_0(t,s)
+                            + 2 iR_1(s,t) \boldsymbol{v}^0(t)^\top \boldsymbol{\Lambda} \hat{\boldsymbol{v}}^2(s)
+                            + \frac{1}{\alpha} C_1(t,s) \hat{\boldsymbol{v}}^2(t)^\top \boldsymbol{\Lambda} \hat{\boldsymbol{v}}^2(s)
+                        \right\}
+                    \right] \\
+                \end{align}
+
+                ここで以下のように巨視変数を導入した。
+                
+                \begin{align}
+                    C_0(t,s) &= \frac{1}{M} \boldsymbol{v}^0(t)^\top \boldsymbol{\Lambda} \boldsymbol{v}^0(s) \\
+                    R_1(t,s) &= -\frac{i}{P} \boldsymbol{v}^1(t) \cdot \hat{\boldsymbol{v}}^1(s) \\
+                    C_1(t,s) &= \frac{1}{P} \boldsymbol{v}^1(t) \cdot \boldsymbol{v}^1(s) \\
+                \end{align}
+            </p>
+            <p class="close-btn">（クリックして非表示）</p>
+        </details>
+
+        <p>
+            $\boldsymbol{A}$ と $\boldsymbol{X}$ についてガウス積分をすると次のようになる。
+            \begin{align}
+                Z[\{\boldsymbol{j}(t)\}]
+                &= \int \mathcal{D}[\boldsymbol{v}^0, \dots, \boldsymbol{v}^4, \hat{\boldsymbol{v}}^1, \dots, \hat{\boldsymbol{v}}^4]
+                \delta \left(
+                    \dot{\boldsymbol{v}}^0(t)
+                    + \boldsymbol{v}^4(t)
+                \right) 
+                \exp \left[
+                    \int dt \boldsymbol{j}(t) \cdot \boldsymbol{v}^0(t)
+                \right] \\
+                & \times \exp \left[
+                    i \int dt \left\{
+                        \hat{\boldsymbol{v}}^1(t) \cdot \boldsymbol{v}^1(t)
+                        + \hat{\boldsymbol{v}}^2(t) \cdot \boldsymbol{v}^2(t)
+                        + \hat{\boldsymbol{v}}^3(t) \cdot \boldsymbol{v}^3(t)
+                        + \hat{\boldsymbol{v}}^4(t) \cdot \boldsymbol{v}^4(t)
+                    \right\}
+                \right] \\
+                & \times \exp \left[
+                    - \frac{1}{2} \int dtds \left\{
+                        C_0(t,s) \hat{\boldsymbol{v}}^1(t) \cdot \hat{\boldsymbol{v}}^1(s)
+                        + \frac{1}{\alpha} C_1(t,s) \hat{\boldsymbol{v}}^2(t)^\top \boldsymbol{\Lambda} \hat{\boldsymbol{v}}^2(s)
+                        + C_2(t,s) \hat{\boldsymbol{v}}^3(t) \cdot \hat{\boldsymbol{v}}^3(s)
+                        + \frac{1}{\nu} C_3(t,s) \hat{\boldsymbol{v}}^4(t) \cdot \hat{\boldsymbol{v}}^4(s) 
+                    \right.
+                \right.\\
+                & \quad \quad \left.
+                    \left. \vphantom{\int}
+                    + 2 iR_1(t,s) \hat{\boldsymbol{v}}^2(t)^\top \boldsymbol{\Lambda} \boldsymbol{v}^0(s)
+                    + 2 iR_3(t,s) \hat{\boldsymbol{v}}^4(t) \cdot \boldsymbol{v}^2(s)
+                    \right\}
+                \right]
+            \end{align}
+            この長い式において注目するべきは、巨視変数を独立な変数とみなしたときに、各$\boldsymbol{v}^i(t)$ の各成分が独立になっている点である。
+            しかし実際は巨視変数が独立ではないので相互作用している。というわけで巨視変数の定義をデルタ関数で課すことで、独立にしてしまおう。
+        </p>
+
+        <h3>相互作用を分解する</h3>
+        <details>
+            <summary>巨視変数の定義をデルタ関数で課す（クリックして表示）</summary>
+            <p>
+                \begin{align}
+                    1 &= \int \mathcal{D}C_0 \mathcal{D}\hat{C}_0 \exp\left[
+                        \frac{1}{2} \int dtds \hat{C}_0(t,s) \left(
+                            MC_0(t,s) - \boldsymbol{v}^0(t)^\top \boldsymbol{\Lambda} \boldsymbol{v}^0(s)
+                        \right)
+                    \right] \\
+                    1 &= \int \mathcal{D}C_1 \mathcal{D}\hat{C}_1 \exp\left[
+                        \frac{1}{2} \int dtds \hat{C}_1(t,s) \left(
+                            PC_1(t,s) - \boldsymbol{v}^1(t) \cdot \boldsymbol{v}^1(s)
+                        \right)
+                    \right] \\
+                    1 &= \int \mathcal{D}C_2 \mathcal{D}\hat{C}_2 \exp\left[
+                        \frac{1}{2} \int dtds \hat{C}_2(t,s) \left(
+                            MC_2(t,s) - \boldsymbol{v}^2(t) \cdot \boldsymbol{v}^2(s)
+                        \right)
+                    \right] \\
+                    1 &= \int \mathcal{D}C_3 \mathcal{D}\hat{C}_3 \exp\left[
+                        \frac{1}{2} \int dtds \hat{C}_3(t,s) \left(
+                            NC_3(t,s) - \boldsymbol{v}^3(t) \cdot \boldsymbol{v}^3(s)
+                        \right)
+                    \right] \\
+                    1 &= \int \mathcal{D}R_1 \mathcal{D}\hat{R}_1 \exp\left[
+                        \frac{i}{\alpha} \int dtds \hat{R}_1(s,t) \left(
+                            iPR_1(t,s) - \boldsymbol{v}^1(t) \cdot \hat{\boldsymbol{v}}^1(s)
+                        \right)
+                    \right] \\
+                    1 &= \int \mathcal{D}R_3 \mathcal{D}\hat{R}_3 \exp\left[
+                        \frac{i}{\nu} \int dtds \hat{R}_3(s,t) \left(
+                            iNR_3(t,s) - \boldsymbol{v}^3(t) \cdot \hat{\boldsymbol{v}}^3(s)
+                        \right)
+                    \right] \\
+                \end{align}
+            </p>
+            <p class="close-btn">（クリックして非表示）</p>
+        </details>
+        <p>
+            そうして得られる分配関数は次のとおり。
+            \begin{align}
+                Z[\{\boldsymbol{j}(t)\}]
+                &= \int \mathcal{D}[C_0 C_1 C_2 C_3 R_1 R_3 \hat{C}_0 \hat{C}_1 \hat{C}_2 \hat{C}_3 \hat{R}_1 \hat{R}_3 ]
+                \exp \left[
+                    MS[C_0,\dots, \hat{R}_3]
+                \right] \\
+
+                S[C_0,\dots, \hat{R}_3] 
+                &= 
+                \frac{1}{2} \int dtds \left\{
+                    \hat{C}_0(t,s) C_0(t,s)
+                    + \alpha \hat{C}_1(t,s) C_1(t,s)
+                    + \hat{C}_2(t,s) C_2(t,s)
+                    + \nu \hat{C}_3(t,s) C_3(t,s)
+                \right\} \\
+                & \quad - \int dtds \left\{
+                     \hat{R}_1(t,s) R_1(s,t)
+                    + \hat{R}_3(t,s) R_3(s,t)
+                \right\} \\
+                & \quad
+                + \alpha \log \mathcal{Z}_1
+                + \nu \log \mathcal{Z}_3
+                + \frac{1}{M} \sum_m \log \mathcal{Z}_{0,2,4;m} \\
+
+                \mathcal{Z}_1 &= \int \mathcal{D}[v^1 \hat{v}^1] \exp\left[
+                    i \int dt \hat{v}^1(t) v^1(t)
+                    - \frac{i}{\alpha} \int dtds \hat{R}_1(s,t)v^1(t) \hat{v}^1(s)
+                \right. \\
+                & \quad \quad \left.
+                    - \frac{1}{2} \int dtds \left\{
+                        C_0(t,s) \hat{v}^1(t) \hat{v}^1(s)
+                        + \hat{C}_1(t,s) v^1(t) v^1(s)
+                    \right\}
+                \right] \\
+
+                \mathcal{Z}_3 &= \int \mathcal{D}[v^3 \hat{v}^3] \exp\left[
+                    i \int dt \hat{v}^3(t) v^3(t)
+                    - \frac{i}{\nu} \int dtds \hat{R}_3(s,t)v^3(t) \hat{v}^3(s)
+                \right. \\
+                & \quad \quad \left.
+                    - \frac{1}{2} \int dtds \left\{
+                        C_2(t,s) \hat{v}^3(t) \hat{v}^3(s)
+                        + \hat{C}_3(t,s) v^3(t) v^3(s)
+                    \right\}
+                \right] \\
+
+                \mathcal{Z}_{0,2,4;m} &= \int \mathcal{D}[v_m^0, \dots, \hat{v}_m^4]
+                \delta \left(
+                    \dot{v}_m^0(t) + v_m^4(t)
+                \right)
+                \exp\left[
+                    \int dt j(t) v_m^0(t)
+                \right] \\
+                & \quad \quad \times \exp\left[
+                    i \int dt \left(
+                        \hat{v}_m^2(t) v_m^2(t)
+                        + \hat{v}_m^4(t) v_m^4(t)
+                    \right)
+                \right. \\
+                & \quad \quad \quad \quad \left.
+                    - i \int dtds \left\{
+                        \lambda_m R_1(t,s) v_m^0(s) \hat{v}_m^2(t)
+                        + R_3(t,s) v_m^2(s) \hat{v}_m^4(t)
+                    \right\}
+                \right. \\
+                & \quad \quad \quad \quad \left.
+                    - \frac{1}{2} \int dtds \left\{
+                        \alpha^{-1} \lambda_m C_1(t,s) \hat{v}_m^2(t) \hat{v}_m^2(s)
+                        + \nu^{-1} C_3(t,s) \hat{v}_m^4(t) \hat{v}_m^4(s)
+                        + \lambda_m \hat{C}_0(t,s) v_m^0(t) v_m^0(s)
+                        + \hat{C}_2(t,s) v_m^2(t) v_m^2(s)
+                    \right\}
+                \right]
+
+            \end{align}
+        </p>
+        <p>
+            作用 $S$ に注目すると、$M, N, P$ を比例させて大きくするとき鞍点法が使える形になっていることがわかる。
+        </p>
+
+        <h3>1体問題の時間発展方程式を得る</h3>
+        <details>
+            <summary>鞍点方程式（クリックして表示）</summary>
+            <p>
+                \begin{align}
+                    \frac{\delta S}{\delta C_0(t,s)} &= 0 \to
+                        \hat{C}_0(t,s) = \alpha \langle \hat{v}^1(t) \hat{v}^1(s) \rangle_1 \\
+                    \frac{\delta S}{\delta \hat{C}_0(t,s)} &= 0 
+                        \to C_0(t,s) = \frac{1}{M}\sum_m \lambda_m \langle v_m^0(t) v_m^0(s) \rangle_{0,2,4;m} \\
+                    \frac{\delta S}{\delta C_1(t,s)} &= 0 \to
+                        \hat{C}_1(t,s) = \frac{1}{\alpha^2M}\sum_m \lambda_m \langle \hat{v}_m^2(t) \hat{v}_m^2(s) \rangle_{0,2,4;m} \\
+                    \frac{\delta S}{\delta \hat{C}_1(t,s)} &= 0
+                        \to C_1(t,s) = \langle v^1(t) v^1(s) \rangle_1 \\
+                    \frac{\delta S}{\delta C_2(t,s)} &= 0 \to
+                        \hat{C}_2(t,s) = \nu \langle \hat{v}^3(t) \hat{v}^3(s) \rangle_3 \\
+                    \frac{\delta S}{\delta \hat{C}_2(t,s)} &= 0 
+                        \to C_2(t,s) = \frac{1}{M}\sum_m \langle v_m^2(t) v_m^2(s) \rangle_{0,2,4;m} \\
+                    \frac{\delta S}{\delta C_3(t,s)} &= 0 \to
+                        \hat{C}_3(t,s) = \frac{1}{\nu^2M}\sum_m \langle \hat{v}_m^4(t) \hat{v}_m^4(s) \rangle_{0,2,4;m} \\
+                    \frac{\delta S}{\delta \hat{C}_3(t,s)} &= 0
+                        \to C_3(t,s) = \langle v^3(t) v^3(s) \rangle_3 \\
+                    \frac{\delta S}{\delta R_1(t,s)} &= 0 
+                        \to i\hat{R}_1(t,s) = \frac{1}{M}\sum_m \lambda_m \langle v_m^0(t) \hat{v}_m^2(s) \rangle_{0,2,4;m} \\
+                    \frac{\delta S}{\delta \hat{R}_1(t,s)} &= 0 
+                        \to iR_1(t,s) = \langle v^1(t) \hat{v}^1(s) \rangle_1 \\
+                    \frac{\delta S}{\delta R_3(t,s)} &= 0 
+                        \to i\hat{R}_3(t,s) = \frac{1}{M}\sum_m \langle v_m^2(t) \hat{v}_m^4(s) \rangle_{0,2,4;m} \\
+                    \frac{\delta S}{\delta \hat{R}_3(t,s)} &= 0 
+                        \to iR_3(t,s) = \langle v^3(t) \hat{v}^3(s) \rangle_3 \\
+                \end{align}
+            </p>
+            <p class="close-btn">（クリックして非表示）</p>
+        </details>
+
+        <details>
+            <summary>ハット変数の消去（クリックして表示）</summary>
+            <p>
+                鞍点方程式から $\hat{C}_i(t,s) \propto \langle \hat{v}^i(t) \hat{v}^i(s) \rangle_i$ となることがわかった。
+                実はこれらの期待値は0に等しくなる。
+                その理由を説明しよう。
+
+                元々の分配関数 $Z[\{\boldsymbol{j}(t)\}]$ には確率変数 $\boldsymbol{v}$ とそのフーリエ変換 $\hat{\boldsymbol{v}}$ が含まれている。
+                しかしフーリエ変換 $\hat{\boldsymbol{v}}$ も $\boldsymbol{v}$ と同格の確率変数とみなすこともできる。
+                その場合モーメントを計算するための補助変数を増やして、
+
+                \begin{align}
+                    Z[\{\boldsymbol{j}(t),\hat{\boldsymbol{j}}(t)\}]
+                    &= \int \mathcal{D}[\boldsymbol{v}, \hat{\boldsymbol{v}}]
+                    \exp\left[
+                        \cdots + \int dt \boldsymbol{j}(t) \cdot \boldsymbol{v}(t) + \int dt \hat{\boldsymbol{j}}(t) \cdot \hat{\boldsymbol{v}}(t) + \cdots
+                    \right]
+                \end{align}
+
+                と書ける。ここで、確率の規格化を考えると
+
+                \begin{align}
+                    Z[0, \hat{\boldsymbol{j}}(t)] = 1
+                \end{align}
+
+                となる。したがって
+                \begin{align}
+                    \langle \hat{v}(t) \hat{v}(s) \rangle
+                    &= \left. \frac{\partial^2 Z[\{0,\hat{j}_i(t)\}]}{\partial \hat{j}_i(t)\partial \hat{j}_i(s)} \right|_{\hat{\boldsymbol{j}}(t)=0} \\
+                    & = 0
+                \end{align}
+
+            </p>
+            <p class="close-btn">（クリックして非表示）</p>
+        </details>
+
+        <details>
+            <summary>時間発展方程式に直す（クリックして表示）</summary>
+            <p>
+                1体の分配関数をよく見ると、最後のハット変数の2次の項が厄介だ。
+                \begin{align}
+                    \mathcal{Z}_1 &= \int \mathcal{D}[v^1 \hat{v}^1] \exp\left[
+                        i \int dt \hat{v}^1(t) v^1(t)
+                        - \frac{i}{\alpha} \int dtds \hat{R}_1(s,t)v^1(t) \hat{v}^1(s)
+                    \right. \\
+                    & \quad \quad \left.
+                        - \frac{1}{2} \int dtds 
+                            C_0(t,s) \hat{v}^1(t) \hat{v}^1(s)
+                    \right] \\
+                \end{align}
+
+                ここで、ガウス積分の逆を考えると
+                \begin{align}
+                    & \exp \left[
+                        - \frac{1}{2} \int dtds \hat{v}^1(t) C_0(t,s) \hat{v}^1(s)
+                    \right] \\
+
+                    &= \int \mathcal{D}u^1 \exp \left[
+                        -\frac{1}{2} \int dtds
+                        \left\{
+                            \left(
+                                u^1(t) + i \int dr_1 C_0(t,r_1) \hat{v}^1(r_1)
+                            \right)
+                            C_0^{-1}(t,s)
+                            \left(
+                                u^1(s) + i \int dr_2 C_0(s,r_2) \hat{v}^1(r_2)
+                            \right)
+
+                            + \hat{v}^1(t) C_0(t,s) \hat{v}^1(s)
+                        \right\}
+                    \right] \\
+
+                    &= \int \mathcal{D}u^1 \exp \left[
+                        -\frac{1}{2} \int dtds u^1(t) C_0^{-1}(t,s) u^1(s)
+                        - i \int dt \hat{v}^1(t) u^1(t)
+                    \right] \\
+                \end{align}
+
+                となる。これによって $\hat{v}^1(t)$ の次数が2次から1次になった。
+            </p>
+            <p>
+                $u^1$ を用いて分配関数は次のようになる。
+                \begin{align}
+                    \mathcal{Z}_1 &= \int \mathcal{D}[v^1 \hat{v}^1 u^1] \exp\left[
+                        i \int dt \hat{v}^1(t) v^1(t)
+                        - \frac{i}{\alpha} \int dtds \hat{R}_1(t,s) \hat{v}^1(t)v^1(s)
+                    \right. \\
+                    & \quad \quad \left.
+                        -  i \int dt \hat{v}^1(t) u^1(t)
+                        -\frac{1}{2} \int dtds u^1(t) C_0^{-1}(t,s) u^1(s)
+                    \right] \\
+
+                    &= \left\langle
+                        \int \mathcal{D}[v^1 \hat{v}^1] \exp\left[
+                            i \int dt \hat{v}^1(t) \left\{
+                                v^1(t)
+                                - \frac{1}{\alpha} \int ds \hat{R}_1(t,s) v^1(s)
+                                - u^1(t)
+                            \right\}
+                        \right]
+                    \right\rangle_{u^1 \sim \mathcal{GP}(0,C_0)}
+                \end{align}
+
+                この式は以下の時間発展方程式のMSRDJ表示である。
+
+                \begin{align}
+                    v^1(t) &= \frac{1}{\alpha} \int ds \hat{R}_1(t,s) v^1(s) + u^1(t) \\
+                    u^1 &\sim \mathcal{GP}(0,C_0)
+                \end{align}
+            </p>
+            <p>
+                同様の計算を $\mathcal{Z}_3$ と $\mathcal{Z}_{0,2,4;m}$ に対しても行う。
+                \begin{align}
+                    \mathcal{Z}_3 &= \int \mathcal{D}[v^3 \hat{v}^3 u^3] \exp\left[
+                        i \int dt \hat{v}^3(t) v^3(t)
+                        - \frac{i}{\nu} \int dtds \hat{R}_3(t,s) \hat{v}^3(t)v^3(s)
+                    \right. \\
+                    & \quad \quad \left.
+                        -  i \int dt \hat{v}^3(t) u^3(t)
+                        -\frac{1}{2} \int dtds u^3(t) C_2^{-1}(t,s) u^3(s)
+                    \right] \\
+
+                    &= \left\langle
+                        \int \mathcal{D}[v^3 \hat{v}^3] \exp\left[
+                            i \int dt \hat{v}^3(t) \left\{ v^3(t) - \frac{1}{\nu} \int ds \hat{R}_3(t,s) v^3(s) - u^3(t) \right\}
+                        \right]
+                    \right\rangle_{u^3 \sim \mathcal{GP}(0,C_2)}
+                \end{align}
+                \begin{align}
+                    \mathcal{Z}_{0,2,4;m} &= \int \mathcal{D}[v_m^0, \dots, \hat{v}_m^4, u_m^2, u_m^4]
+                    \delta \left(
+                        \dot{v}_m^0(t) + v_m^4(t)
+                    \right)
+                    \exp\left[
+                        \int dt j(t) v_m^0(t)
+                    \right] \\
+                    & \quad \quad \times \exp\left[
+                        i \int dt \left(
+                            \hat{v}_m^2(t) v_m^2(t)
+                            + \hat{v}_m^4(t) v_m^4(t)
+                        \right)
+                    \right. \\
+                    & \quad \quad \quad \quad \left.
+                        - i \int dtds \left\{
+                            \lambda_m R_1(t,s) v_m^0(s) \hat{v}_m^2(t)
+                            + R_3(t,s) v_m^2(s) \hat{v}_m^4(t)
+                        \right\}
+                    \right. \\
+                    & \quad \quad \quad \quad \left.
+                        - i \int dt \left\{
+                            \hat{v}_m^2(t) u_m^2(t)
+                            + \hat{v}_m^4(t) u_m^4(t)
+                        \right\}
+                    \right. \\
+                    & \quad \quad \quad \quad \left.
+                        - \frac{1}{2} \int dtds \left\{
+                            \frac{\alpha}{\lambda_m} u_m^2(t) C_1^{-1}(t,s) u_m^2(s)
+                            + \nu u_m^4(t) C_3^{-1}(t,s) u_m^4(s)
+                        \right\}
+                    \right] \\
+
+                    &= \left\langle
+                        \int \mathcal{D}[v_m^0, \dots, \hat{v}_m^4]
+                        \delta \left(
+                            \dot{v}_m^0(t) + v_m^4(t)
+                        \right)
+                        \exp\left[
+                            \int dt j(t) v_m^0(t)
+                        \right]
+                    \right. \\
+                    & \quad \quad \left.
+                        \times \exp\left[
+                            i \int dt \left\{
+                                \hat{v}_m^2(t) \left(
+                                    v_m^2(t) - \lambda_m \int ds R_1(t,s) v_m^0(s) - u_m^2(t)
+                                \right)
+                            \right.
+                        \right. 
+                    \right. \\
+                    & \quad \quad \quad \quad \left.
+                        \left.
+                            \left.
+                                + \hat{v}_m^4(t) \left(
+                                    v_m^4(t) - \int ds R_3(t,s) v_m^2(s) - u_m^4(t)
+                                \right)
+                            \right\}
+                        \right]
+                    \right\rangle_{u_m^2 \sim \mathcal{GP}(0,\alpha^{-1}\lambda_mC_1), u_m^4 \sim \mathcal{GP}(0,\nu^{-1} C_3)}
+                \end{align}
+            </p>
+            <p class="close-btn">（クリックして非表示）</p>
+        </details>
+
+        <p>
+            そうして得られる1体問題の時間発展方程式は次のとおり。
+            \begin{align}
+                \dot{v}_m^0(t) &= -v_m^4(t) \\
+                v_m^2(t) &= \lambda_m \int ds R_1(t,s) v_m^0(s) + u_m^2(t) \\
+                v_m^4(t) &= \int ds R_3(t,s) v_m^2(s) + u_m^4(t) \\
+                v^1(t) &= \frac{1}{\alpha} \int ds \hat{R}_1(t,s) v^1(s) + u^1(t) \\
+                v^3(t) &= \frac{1}{\nu} \int ds \hat{R}_3(t,s) v^3(s) + u^3(t) \\
+                u_m^2 &\sim \mathcal{GP}(0,\alpha^{-1}\lambda_mC_1) \\
+                u_m^4 &\sim \mathcal{GP}(0,\nu^{-1} C_3) \\
+                u^1 &\sim \mathcal{GP}(0,C_0) \\
+                u^3 &\sim \mathcal{GP}(0,C_2) \\
+            \end{align}
+        </p>
+        <p>
+            この微分方程式を数値的に解くことで、特に誤差関数 $\mathcal{L}(t) = C_0(t,t)$ の時間発展を追うことができる。
+            元論文ではそれを利用してNeural scaling lawの解析に進むが、この記事はここまで。
+        </p>
+    
+        
+        <div style="margin-top: 60px;"></div>
+        <a href="../topics.html" target="_blank">記事一覧に戻る</a>
+    </main>
+
+    <a href="#" class="pageup" id="js-pageup" aria-label="ページトップへ戻る">
+        <div class="arrow"></div>
+    </a>
+
+    <footer>
+        <small>© 2026 Asahi Nakamuta. Designed by <a href="https://utsusemi.hiroec.com" target="_blank" rel="noopener">Utsusemi</a>.</small>
+    </footer>
+
+    <script src="../js/common.js"></script>
+</body>
+
+</html>
